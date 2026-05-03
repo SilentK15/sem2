@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="en">
+<head> 
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>APSIT Notes — Sem 2</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg: #f4f1eb; --surface: #ffffff; --surface2: #ede9e0; --text: #1a1a1a;
+      --text-muted: #7a7369; --border: #d8d2c6; --shadow: 0 2px 12px rgba(0,0,0,0.07);
+      --eg: #e05c4b; --am: #3b7dd8; --ep: #e8a838; --ec: #3aab72; --pc: #8b55d4;
+      --radius: 14px; --font-head: 'Syne', sans-serif; --font-body: 'DM Sans', sans-serif;
+    }
+    [data-theme="dark"] {
+      --bg: #141210; --surface: #1e1c19; --surface2: #272420; --text: #f0ece4;
+      --text-muted: #8a8278; --border: #333028; --shadow: 0 2px 12px rgba(0,0,0,0.3);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: var(--font-body); background: var(--bg); color: var(--text); transition: background 0.3s, color 0.3s; min-height: 100vh; }
+    .app { display: flex; flex-direction: column; min-height: 100vh; }
+    .navbar { position: sticky; top: 0; z-index: 100; background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 20px; display: flex; align-items: center; gap: 12px; height: 58px; backdrop-filter: blur(8px); }
+    .nav-logo { font-family: var(--font-head); font-weight: 800; font-size: 1.15rem; color: var(--text); text-decoration: none; margin-right: auto; letter-spacing: -0.5px; }
+    .nav-logo span { opacity: 0.4; }
+    .search-wrap { position: relative; flex: 1; max-width: 320px; }
+    .search-wrap input { width: 100%; padding: 8px 14px 8px 36px; border: 1.5px solid var(--border); border-radius: 999px; background: var(--surface2); color: var(--text); font-family: var(--font-body); font-size: 0.85rem; outline: none; transition: border-color 0.2s; }
+    .search-wrap input:focus { border-color: var(--text-muted); }
+    .search-wrap .search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); opacity: 0.4; font-size: 0.9rem; }
+    .toggle-btn { background: var(--surface2); border: 1.5px solid var(--border); border-radius: 999px; padding: 6px 14px; cursor: pointer; font-size: 0.8rem; font-family: var(--font-body); color: var(--text); transition: all 0.2s; }
+    .toggle-btn:hover { border-color: var(--text-muted); }
+    .page-tabs { display: flex; gap: 4px; padding: 12px 20px 0; border-bottom: 1px solid var(--border); background: var(--surface); }
+    .page-tab { padding: 8px 18px; border-radius: 10px 10px 0 0; font-family: var(--font-body); font-size: 0.85rem; font-weight: 500; cursor: pointer; border: none; background: transparent; color: var(--text-muted); transition: all 0.2s; }
+    .page-tab.active { background: var(--bg); color: var(--text); font-weight: 600; }
+    .page { display: none; padding: 24px 20px; max-width: 900px; margin: 0 auto; width: 100%; }
+    .page.active { display: block; }
+    .home-greeting { font-family: var(--font-head); font-size: 1.7rem; font-weight: 800; margin-bottom: 4px; letter-spacing: -0.5px; }
+    .home-sub { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 24px; }
+    .section-label { font-family: var(--font-head); font-size: 0.7rem; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 10px; }
+    .recent-list { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 28px; }
+    .recent-chip { padding: 7px 14px; background: var(--surface); border: 1.5px solid var(--border); border-radius: 999px; font-size: 0.8rem; cursor: pointer; transition: all 0.2s; color: var(--text); }
+    .recent-chip:hover { border-color: var(--text-muted); }
+    .recent-chip .chip-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+    .subjects-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; margin-bottom: 28px; }
+    .subject-card { background: var(--surface); border: 1.5px solid var(--border); border-radius: var(--radius); padding: 18px; cursor: pointer; transition: transform 0.18s, box-shadow 0.18s; position: relative; overflow: hidden; }
+    .subject-card:hover { transform: translateY(-3px); box-shadow: var(--shadow); }
+    .subject-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; border-radius: var(--radius) var(--radius) 0 0; }
+    .subject-card[data-subject="eg"]::before { background: var(--eg); }
+    .subject-card[data-subject="am"]::before { background: var(--am); }
+    .subject-card[data-subject="ep"]::before { background: var(--ep); }
+    .subject-card[data-subject="ec"]::before { background: var(--ec); }
+    .subject-card[data-subject="pc"]::before { background: var(--pc); }
+    .card-top { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+    .card-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+    .card-name { font-family: var(--font-head); font-weight: 700; font-size: 0.95rem; flex: 1; }
+    .card-code { font-size: 0.7rem; background: var(--surface2); padding: 3px 8px; border-radius: 6px; color: var(--text-muted); }
+    .progress-wrap { margin-bottom: 10px; }
+    .progress-label { display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-muted); margin-bottom: 5px; }
+    .progress-bar { height: 6px; border-radius: 999px; background: var(--surface2); overflow: hidden; }
+    .progress-fill { height: 100%; border-radius: 999px; transition: width 0.4s ease; }
+    .subject-card[data-subject="eg"] .progress-fill { background: var(--eg); }
+    .subject-card[data-subject="am"] .progress-fill { background: var(--am); }
+    .subject-card[data-subject="ep"] .progress-fill { background: var(--ep); }
+    .subject-card[data-subject="ec"] .progress-fill { background: var(--ec); }
+    .subject-card[data-subject="pc"] .progress-fill { background: var(--pc); }
+    .card-open-btn { font-size: 0.78rem; font-weight: 600; color: var(--text-muted); display: flex; align-items: center; gap: 4px; }
+    #search-results { display: none; background: var(--surface); border: 1.5px solid var(--border); border-radius: var(--radius); padding: 12px; margin-bottom: 18px; }
+    .search-result-item { padding: 8px 10px; border-radius: 8px; cursor: pointer; font-size: 0.85rem; display: flex; align-items: center; gap: 10px; transition: background 0.15s; }
+    .search-result-item:hover { background: var(--surface2); }
+    .subject-page-header { display: flex; align-items: center; gap: 14px; margin-bottom: 20px; }
+    .back-btn { background: var(--surface2); border: 1.5px solid var(--border); border-radius: 10px; padding: 7px 12px; cursor: pointer; font-size: 0.85rem; font-family: var(--font-body); color: var(--text); transition: all 0.2s; }
+    .back-btn:hover { border-color: var(--text-muted); }
+    .subject-page-title { font-family: var(--font-head); font-size: 1.4rem; font-weight: 800; }
+    .subject-accent-bar { width: 42px; height: 4px; border-radius: 999px; margin-left: auto; }
+    .inner-tabs { display: flex; gap: 8px; margin-bottom: 20px; }
+    .inner-tab { padding: 7px 18px; border-radius: 999px; border: 1.5px solid var(--border); background: transparent; font-family: var(--font-body); font-size: 0.82rem; font-weight: 500; cursor: pointer; color: var(--text-muted); transition: all 0.2s; }
+    .inner-tab.active { border-color: transparent; color: #fff; font-weight: 600; }
+    .pinned-section { background: var(--surface); border: 1.5px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 16px; }
+    .pinned-header { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; font-size: 0.78rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); }
+    .pinned-list { display: flex; flex-direction: column; gap: 8px; }
+    .file-card { display: flex; align-items: center; gap: 12px; padding: 10px 12px; background: var(--surface2); border-radius: 10px; border: 1.5px solid var(--border); cursor: pointer; transition: all 0.18s; }
+    .file-card:hover { border-color: var(--text-muted); transform: translateX(2px); }
+    .file-icon { font-size: 1.1rem; }
+    .file-info { flex: 1; }
+    .file-name { font-size: 0.85rem; font-weight: 500; }
+    .file-meta { font-size: 0.72rem; color: var(--text-muted); margin-top: 2px; }
+    .priority-badge { font-size: 0.68rem; font-weight: 700; padding: 3px 8px; border-radius: 999px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .priority-high { background: #fde8e6; color: #c0392b; }
+    .priority-medium { background: #fef3e0; color: #b7770d; }
+    .priority-low { background: #e8f5ee; color: #1e8449; }
+    [data-theme="dark"] .priority-high { background: #3d1a18; color: #e07060; }
+    [data-theme="dark"] .priority-medium { background: #3d2e10; color: #d4a030; }
+    [data-theme="dark"] .priority-low { background: #12301e; color: #50c878; }
+    .file-pin { font-size: 0.8rem; opacity: 0.5; }
+    .modules-section { margin-bottom: 16px; }
+    .module-item { display: flex; align-items: flex-start; gap: 12px; padding: 14px 16px; background: var(--surface); border: 1.5px solid var(--border); border-radius: var(--radius); margin-bottom: 8px; cursor: pointer; transition: all 0.18s; }
+    .module-item:hover { border-color: var(--text-muted); }
+    .module-item.done { opacity: 0.6; }
+    .module-check { width: 20px; height: 20px; border-radius: 6px; border: 2px solid var(--border); flex-shrink: 0; margin-top: 1px; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; transition: all 0.2s; cursor: pointer; }
+    .module-check.checked { color: #fff; border-color: transparent; }
+    .module-info { flex: 1; }
+    .module-name { font-size: 0.9rem; font-weight: 500; }
+    .module-sub { font-size: 0.75rem; color: var(--text-muted); margin-top: 3px; }
+    .module-files-count { font-size: 0.75rem; color: var(--text-muted); background: var(--surface2); padding: 3px 8px; border-radius: 6px; }
+    .tt-header { font-family: var(--font-head); font-size: 1.4rem; font-weight: 800; margin-bottom: 4px; }
+    .tt-sub { color: var(--text-muted); font-size: 0.85rem; margin-bottom: 20px; }
+    .tt-table { width: 100%; border-collapse: collapse; background: var(--surface); border-radius: var(--radius); overflow: hidden; border: 1.5px solid var(--border); font-size: 0.85rem; }
+    .tt-table th { padding: 12px 16px; text-align: left; background: var(--surface2); font-family: var(--font-head); font-size: 0.75rem; letter-spacing: 0.8px; text-transform: uppercase; color: var(--text-muted); border-bottom: 1.5px solid var(--border); }
+    .tt-table td { padding: 13px 16px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+    .tt-table tr:last-child td { border-bottom: none; }
+    .tt-table tr.today td { background: var(--surface2); }
+    .tt-subject-pill { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 0.78rem; font-weight: 600; color: #fff; }
+    .tt-today-badge { display: inline-block; font-size: 0.65rem; font-weight: 700; background: #27ae60; color: #fff; padding: 2px 7px; border-radius: 999px; text-transform: uppercase; margin-left: 8px; vertical-align: middle; }
+    .countdown-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; margin-bottom: 24px; }
+    .countdown-card { background: var(--surface); border: 1.5px solid var(--border); border-radius: var(--radius); padding: 16px; }
+    .countdown-subject { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px; }
+    .countdown-days { font-family: var(--font-head); font-size: 2rem; font-weight: 800; line-height: 1; }
+    .countdown-label { font-size: 0.75rem; color: var(--text-muted); margin-top: 2px; }
+    .countdown-date { font-size: 0.78rem; font-weight: 500; margin-top: 6px; }
+    @media (max-width: 600px) {
+      .navbar { padding: 0 14px; } .search-wrap { max-width: 160px; } .page { padding: 16px 14px; }
+      .home-greeting { font-size: 1.3rem; } .subjects-grid { grid-template-columns: 1fr; }
+      .countdown-cards { grid-template-columns: 1fr 1fr; } .tt-table { font-size: 0.78rem; }
+      .tt-table th, .tt-table td { padding: 10px 10px; }
+    }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    .page.active { animation: fadeUp 0.25s ease; }
+  </style>
+</head>
+<body>
+<div class="app">
+  <nav class="navbar">
+    <a class="nav-logo" href="#" onclick="showPage('home')">APSIT Notes<span> Sem 2</span></a>
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="search-input" placeholder="Search notes, subjects…" oninput="handleSearch(this.value)"/>
+    </div>
+    <button class="toggle-btn" onclick="toggleDark()" id="dark-btn">🌙 Dark</button>
+  </nav>
+  <div class="page-tabs">
+    <button class="page-tab active" onclick="showPage('home')" id="tab-home">🏠 Home</button>
+    <button class="page-tab" onclick="showPage('timetable')" id="tab-timetable">📅 Timetable</button>
+  </div>
+
+  <div class="page active" id="page-home">
+    <div class="home-greeting">APSIT Notes — Sem 2 👋</div>
+    <div class="home-sub">Pick a subject or search for your notes below.</div>
+    <div id="search-results"><div class="section-label">Search Results</div><div id="search-results-list"></div></div>
+    <div class="section-label">Recently Viewed</div>
+    <div class="recent-list" id="recent-list"><span style="font-size:0.82rem; color:var(--text-muted)">Nothing yet — open a file to track it here.</span></div>
+    <div class="section-label">Your Subjects</div>
+    <div class="subjects-grid" id="subjects-grid"></div>
+  </div>
+
+  <div class="page" id="page-subject">
+    <div class="subject-page-header">
+      <button class="back-btn" onclick="showPage('home')">← Back</button>
+      <div class="subject-page-title" id="sp-title"></div>
+      <div class="subject-accent-bar" id="sp-bar"></div>
+    </div>
+    <div class="inner-tabs" id="inner-tabs"></div>
+    <div id="sp-notes-content"></div>
+    <div id="sp-qb-content" style="display:none"></div>
+  </div>
+
+  <div class="page" id="page-timetable">
+    <div class="tt-header">📅 End Semester Timetable</div>
+    <div class="tt-sub">Your upcoming exams — countdown updates automatically.</div>
+    <div class="section-label">Days Until Exam</div>
+    <div class="countdown-cards" id="countdown-cards"></div>
+    <div class="section-label">Full Schedule</div>
+    <div style="overflow-x:auto">
+      <table class="tt-table" id="tt-table">
+        <thead><tr><th>Date</th><th>Day</th><th>Paper Code</th><th>Subject</th></tr></thead>
+        <tbody id="tt-body"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+const SUBJECTS = [
+  {
+    id: "eg",
+    name: "Engineering Graphics",
+    color: "var(--eg)",
+    modules: [
+      "Module 1 — Introduction & Drawing Instruments",
+      "Module 2 — Scales and Engineering Curves",
+      "Module 3 — Projection of Points & Lines",
+      "Module 4 — Projection of Planes",
+      "Module 5 — Projection of Solids",
+      "Module 6 — Isometric & Orthographic Views",
+    ],
+    pinned: [],
+    notes: {
+      0: [
+        { name: "Cycloidal Curve", type: "📄", priority: "medium", link: "https://drive.google.com/file/d/1cApUHU1hCq7xRkbfD8UK_VfbZ3I4zpsx/preview" },
+        { name: "Engineering Curves — Involute", type: "📄", priority: "medium", link: "https://drive.google.com/file/d/1G674TD1EZYUXWqTJKcj-PQujrm1FE-hD/preview" },
+        { name: "Engineering Curves (Presentation)", type: "📊", priority: "medium", link: "https://docs.google.com/presentation/d/1X9gPuvSZKgGxWMouKueiZ08lzkHSsrom/preview" },
+        { name: "Module 1 — Solved Problems", type: "📄", priority: "medium", link: "https://drive.google.com/file/d/1tDonrPWh_B5Crse1yH6ClDhGWi8uQnAS/preview" },
+      ],
+      1: [
+        { name: "Projection of Points", type: "📄", priority: "medium", link: "https://drive.google.com/file/d/14K8LTqpRRVl0uKg-acTR2J4dIGe9RYjg/preview" },
+        { name: "Introduction to Projection of Lines", type: "📄", priority: "medium", link: "https://drive.google.com/file/d/1CA5UKki2xy62xOENkdQHtcs0eSHLKOe_/preview" },
+        { name: "Projection of Planes 1", type: "📄", priority: "medium", link: "https://drive.google.com/file/d/1EwC8VINBNDHeQ5tXHARMnQA4i1tc3kpA/preview" },
+        { name: "Module 2 — Solved Problems", type: "📄", priority: "medium", link: "https://drive.google.com/file/d/1NZjYdVUDdSRFWV8UDJWM8cMbsIlEnT7V/preview" },
+        { name: "Projection of Lines — Problem Set 1", type: "📄", priority: "medium", link: "https://drive.google.com/file/d/1y26DI5Pn65rqhzuue__A7KA6w4De4CHv/preview" },
+      ],
+      2: [], 3: [], 4: [], 5: [],
+    },
+    qb: [
+      { name: "EG CAD QB", type: "📋", priority: "high", link: "https://drive.google.com/file/d/1OSaLMT79iaV_w_9qKV8U9eqkUt-anlU2/preview" },
+      { name: "EG Question Bank 2024-25", type: "📋", priority: "high", link: "https://drive.google.com/file/d/1nzVbetUr5Y4vlHGM_9kli09GIbxYbaKE/preview" },
+      { name: "EG IA1 QB", type: "📋", priority: "high", link: "https://drive.google.com/file/d/1INrrQsux1UiDqbcdLIBoxOxjJbJYNeWi/preview" },
+    ],
+    resources: [],
+  },
+  {
+    id: "am",
+    name: "Applied Mathematics",
+    color: "var(--am)",
+    modules: [
+      "Module 1 — Double Integration",
+      "Module 2 — Triple Integration",
+      "Module 3 — Application of Double Integrals",
+      "Module 4 — Gamma & Beta Functions",
+      "Module 5 — First Order First Degree Differential Equations",
+      "Module 6 — Linear DE & Numerical Methods",
+    ],
+    pinned: [],
+    notes: {
+      0: [
+        { name: "Double Integration — Theory", type: "📄", priority: "medium", link: "https://drive.google.com/file/d/12TRdG-G-YvBfGG7fU0TzHamm6KqH1Zks/preview" },
+        { name: "Double Integration — Solved Examples", type: "📄", priority: "medium", link: "https://drive.google.com/file/d/1K3uC_bPGYHADZF2Rm0A-SO2zJpSBxdoD/preview" },
+        { name: "DUIS — Theory", type: "📄", priority: "medium", link: "https://drive.google.com/file/d/1-nFI9jnVWahvu_k_YaUe4kHoB_jDEY5B/preview" },
+        { name: "DUIS — Solved Examples", type: "📄", priority: "medium", link: "https://drive.google.com/file/d/1awZp7wYIi83adU7Sue443uN4K20Q5JoS/preview" },
+      ],
+      1: [
+        { name: "Triple Integration — Theory", type: "📄", priority: "medium", link: "https://drive.google.com/file/d/1-em0ZNS870TfI8-n6lQOFcTgnb4veQ_6/preview" },
+        { name: "Triple Integration — Solved Examples Type I", type: "📄", priority: "medium", link: "https://drive.google.com/file/d/1bwsjdBSo_WRyXr1dCHn13LYjlzl0LX92/preview" },
+        { name: "Triple Integration — Solved Examples Type II", type: "📄", priority: "medium", link: "https://drive.google.com/file/d/1m5PG7-C4YoQq5mmYabGcxPKy_D_783Jc/preview" },
+        { name: "Surfaces in 3D", type: "📄", priority: "medium", link: "https://drive.google.com/file/d/1HV6WwwT1k8yOkI_h5ViVZTtOhmamh9BY/preview" },
+      ],
+      2: [
+        { name: "Application of Double Integrals — Solved Examples", type: "📄", priority: "high", link: "https://drive.google.com/file/d/1qP7Pj8aTcR9fSNHfQKIEABI1ynoXc_Bs/preview" },
+      ],
+      3: [
+        { name: "Beta & Gamma Function — Theory", type: "📄", priority: "medium", link: "https://drive.google.com/file/d/1hRNVymAB88jzBEexAT1vaGCbg-q0mrHX/preview" },
+        { name: "Gamma Function — Solved Examples", type: "📄", priority: "medium", link: "https://drive.google.com/file/d/1KK0NwjkAUrOnl3sKLnmmoAxdJazQg6Xj/preview" },
+        { name: "Beta Function — Solved Problems", type: "📄", priority: "medium", link: "https://drive.google.com/file/d/1eFb2OpPWqfv48gqmVmgMMPIj-oiH--qs/preview" },
+      ],
+      4: [
+        { name: "D.E. of First Order & First Degree — Theory", type: "📄", priority: "medium", link: "https://drive.google.com/file/d/1-V4GtEX4uXgalqsf_7sjNd0gqxc8ITwV/preview" },
+        { name: "Exact D.E. — Solved Examples", type: "📄", priority: "medium", link: "https://drive.google.com/file/d/1ifVH3olynpGL-wIooBfOC3f1DBRJl3xo/preview" },
+        { name: "Non Exact D.E. — Solved Examples Part I", type: "📄", priority: "medium", link: "https://drive.google.com/file/d/1EQCOgWKsr3jXQ4HGj6WAlVCZMIMD6tXn/preview" },
+        { name: "Non Exact D.E. — Solved Examples Part II", type: "📄", priority: "medium", link: "https://drive.google.com/file/d/11IZOJzr8nXv44iDlZ1JMeOLVNnBgBv_0/preview" },
+        { name: "Linear D.E. of First Order First Degree — Solved Examples", type: "📄", priority: "medium", link: "https://drive.google.com/file/d/1Tq5rOOwPCC1OAi7ePuWmujUTN0cM-Iy4/preview" },
+        { name: "Reducible to Linear D.E. — Solved Examples", type: "📄", priority: "medium", link: "https://drive.google.com/file/d/1w_dBzC8DZcumYpw9TYCkL0HSbPP4hx98/preview" },
+      ],
+      5: [
+        { name: "Linear D.E. with Constant Coefficients — Theory", type: "📄", priority: "medium", link: "https://drive.google.com/file/d/19x7eJoaKXUfKEdvVjsuEkg0Rd6z6oPuV/preview" },
+        { name: "LDE Solved Examples Part I", type: "📄", priority: "medium", link: "https://drive.google.com/file/d/1zYHWoafWID3HuWTuL47wBngZcjy4X8fa/preview" },
+        { name: "LDE Solved Examples Part II", type: "📄", priority: "medium", link: "https://drive.google.com/file/d/1tb3FxZ_Pu35GhhcWM4dmh9oGxqONLrXP/preview" },
+        { name: "Method of Variation of Parameter", type: "📄", priority: "medium", link: "https://drive.google.com/file/d/1HQvFx55Pwu1cntr1XPdknA_HAaGSz9ht/preview" },
+        { name: "Numerical Solutions to ODE — Theory", type: "📄", priority: "medium", link: "https://drive.google.com/file/d/1P4F01d-jJ-ePwha_BdlbcJGE5T6KlO_P/preview" },
+        { name: "Numerical Solutions to ODE — Solved Examples", type: "📄", priority: "medium", link: "https://drive.google.com/file/d/1SXNn2T8h9kp2OOl3ul_iqbK8X7wayrKi/preview" },
+        { name: "Numerical Integration — Theory & Solved Examples", type: "📄", priority: "medium", link: "https://drive.google.com/file/d/1yK_LtGpAoUqqUW_rkVcjkADY1q3E7GSi/preview" },
+      ],
+    },
+    qb: [
+      { name: "Question Bank AM2", type: "📋", priority: "high", link: "https://drive.google.com/file/d/1IR9TAF2QGelQHhQ0WzJg20DX_Ex6r72t/preview" },
+      { name: "PYQ AM-II 2025-26", type: "📋", priority: "high", link: "https://drive.google.com/file/d/1SAIXL_XbhfY5bT-hF1cvIn8WIOnSSksg/preview" },
+    ],
+    resources: [],
+  },
+  {
+    id: "ep",
+    name: "Elective Physics",
+    color: "var(--ep)",
+    modules: [
+      "Module 1 — Semiconductor Physics",
+      "Module 2 — PN Junction Diode",
+      "Module 3 — Special Diodes",
+      "Module 4 — BJT",
+      "Module 5 — FET",
+      "Module 6 — Nanotechnology",
+    ],
+    pinned: [],
+    notes: {
+      0: [ { name: "Semiconductor Physics — Notes", type: "📄", priority: "medium", link: "https://drive.google.com/file/d/1XZdm0BqouP-GDN6-GgjwwC9TV7iwsiSL/preview" } ],
+      1: [ { name: "PN Junction Diode — Notes", type: "📄", priority: "medium", link: "https://drive.google.com/file/d/1UcVKeCTnByO9aRD-QEFWEJNnH3qT5AJa/preview" } ],
+      2: [ { name: "Special Diodes — Notes", type: "📄", priority: "medium", link: "https://drive.google.com/file/d/1pxwJRNgX_WiJemH7c8Tz326WDYsoOzA0/preview" } ],
+      3: [ { name: "BJT — Applied Physics Notes", type: "📄", priority: "medium", link: "https://drive.google.com/file/d/1P8CwYSyX2cHTXv96C24vuv27ileGJk4j/preview" } ],
+      4: [ { name: "FET — Applied Physics Notes", type: "📄", priority: "medium", link: "https://drive.google.com/file/d/1-LPogb8IUhFUzqyJ7LaZwzP83YCiOxCL/preview" } ],
+      5: [ { name: "Nanotechnology — Semiconductor Physics Notes", type: "📄", priority: "medium", link: "https://drive.google.com/file/d/1vVCLjjPlcr7z93Z5Z8KKpobxTIW_Z7OC/preview" } ],
+    },
+    qb: [],
+    resources: [],
+  },
+  {
+    id: "ec",
+    name: "Elective Chemistry",
+    color: "var(--ec)",
+    modules: [
+      "Module 1 — Fuels & Combustion",
+      "Module 2 — Corrosion",
+      "Module 3 — Phase Rule & Alloys",
+      "Module 4 — Polymers",
+      "Module 5 — Advanced Polymers",
+      "Module 6 — Nanomaterials",
+    ],
+    pinned: [],
+    notes: {
+      0: [
+        { name: "Combustion and Its Numerical", type: "📄", priority: "high", link: "https://drive.google.com/file/d/1VWvw7eTwV9XjEwU5XPTQyEFnfi-IQHMI/preview" },
+        { name: "Fuel Introduction", type: "📄", priority: "medium", link: "https://drive.google.com/file/d/1yS_BW9M4MKR8HAvr6GXd7Yi0dBtyxSaV/preview" },
+        { name: "Numerical", type: "📄", priority: "high", link: "https://drive.google.com/file/d/1jSEWFygpv29Z2MAVENGK3zC-1hIXX8rl/preview" },
+        { name: "Proximate and Ultimate Analysis of Fuel", type: "📄", priority: "medium", link: "https://drive.google.com/file/d/1zYOwt0sWlDoc_Nc9rNYIW3SIVJlRc0mg/preview" },
+        { name: "Proximate and Ultimate Notes (Compressed)", type: "📄", priority: "medium", link: "https://drive.google.com/file/d/1EBP27MdW_T2c03z47uq5Ynf1FRzu0eIt/preview" },
+      ],
+      1: [
+        { name: "Hot Dipping — Galvanising and Tinning", type: "📄", priority: "medium", link: "https://drive.google.com/file/d/1bW50rzoPuglLpqfHZitNkCOm3DTLp_D8/preview" },
+        { name: "Cathodic Protection and Corrosion in Electronic Devices", type: "📄", priority: "medium", link: "https://drive.google.com/file/d/1F63MO8N1-87ePp3gYpUszWyMJjq87d5S/preview" },
+        { name: "Dry and Wet Corrosion", type: "📄", priority: "medium", link: "https://drive.google.com/file/d/1TAzY5NBM_EeE_Fo-uFvlhq6mb6VyoAF0/preview" },
+        { name: "Factors Affecting Rate of Corrosion", type: "📄", priority: "medium", link: "https://drive.google.com/file/d/1yThwL7Od0XcbZa1lNYzpedhlJzzE3-i4/preview" },
+        { name: "Inhibitors", type: "📄", priority: "medium", link: "https://drive.google.com/file/d/15XvzkGjvTHPoxDjAKct70Rp67yCj4tGt/preview" },
+        { name: "Proper Designing and Material Selection", type: "📄", priority: "medium", link: "https://drive.google.com/file/d/1t2O2QkegNfYrWPcZjusg4XpBhXJQijbp/preview" },
+      ],
+      2: [
+        { name: "Eutectic Numerical", type: "📄", priority: "medium", link: "https://drive.google.com/file/d/1p1Zl5K_JBJmAwKJ09oty2OxsQR1ljipf/preview" },
+        { name: "Phase, Component, Degree of Freedom", type: "📄", priority: "medium", link: "https://drive.google.com/file/d/1jS_gVp0765PbvvzoERvLkW2LopMbQ58U/preview" },
+        { name: "Two Component Pb-Ag System", type: "📄", priority: "medium", link: "https://drive.google.com/file/d/1eChMfEmojxM2Rlq35LJLFR1t-yrDVS59/preview" },
+      ],
+      3: [
+        { name: "Module IV — Polymers", type: "📄", priority: "medium", link: "https://drive.google.com/file/d/1WGPT7axPkpt3Ga3GDNJrzRFPbHADvbZC/preview" },
+        { name: "Plastics and Elastomers", type: "📄", priority: "medium", link: "https://drive.google.com/file/d/1LrBz8eFhyXsUeildP0z31Wj4mX75qXDE/preview" },
+      ],
+      4: [
+        { name: "Module V — Advanced Polymers", type: "📄", priority: "medium", link: "https://drive.google.com/file/d/1nP8agNh1NAD1kfpIpND-drK7RfkVsubV/preview" },
+        { name: "Conducting and Natural Biopolymer", type: "📄", priority: "medium", link: "https://drive.google.com/file/d/1rZcNSAuYuxJz9V2NiQ5ku2cdadYoOolp/preview" },
+        { name: "Liquid Crystal Polymers", type: "📄", priority: "medium", link: "https://drive.google.com/file/d/18_XsNSQsyJ4AXg1kmBvnYVpUg_d9WCRu/preview" },
+        { name: "Smart Polymers", type: "📄", priority: "medium", link: "https://drive.google.com/file/d/10DIOb-P19y-9seew6Wk8VupKeaBWey8-/preview" },
+        { name: "Synthetic Biopolymers", type: "📄", priority: "medium", link: "https://drive.google.com/file/d/1YxNUwV3a987uYS1hWU7utZJTHuzU2eKc/preview" },
+      ],
+      5: [
+        { name: "Module VI — Nanomaterials", type: "📄", priority: "medium", link: "https://drive.google.com/file/d/1U8v1Hw-oEINha3YBi4zRUz6f8pHYb_Fh/preview" },
+        { name: "Nanomaterials", type: "📄", priority: "medium", link: "https://drive.google.com/file/d/1yNK11oMAl4vbDoas_zbdu07HwRb3b7mp/preview" },
+      ],
+    },
+    qb: [],
+    resources: [],
+  },
+  {
+    id: "pc",
+    name: "Data Structure",
+    color: "var(--pc)",
+    modules: [
+      "Module 1 — Introduction to Data Structures",
+      "Module 2 — Stacks",
+      "Module 3 — Queues",
+      "Module 4 — Linked Lists",
+      "Module 5 — Trees",
+      "Module 6 — Applications of Stack",
+    ],
+    pinned: [],
+    notes: {
+      0: [
+        { name: "Introduction to Data Structures — Linear and Non Linear", type: "📄", priority: "medium", link: "https://drive.google.com/file/d/1xeZzeZn-iUHRJ83LrWaB3zQQcmS5YwVG/preview" },
+        { name: "Abstract Data Types", type: "📄", priority: "medium", link: "https://drive.google.com/file/d/1fVLgJYT6vmF2-3PxTSVi2CZMZ3TsT4d0/preview" },
+        { name: "Types of Data Structures with Applications", type: "📄", priority: "medium", link: "https://drive.google.com/file/d/1-qOKYeDA65ZCx9rzyFYzQ4UpbWK8Lwpx/preview" },
+      ],
+      1: [
+        { name: "Introduction to Stack and Its Operations", type: "📄", priority: "medium", link: "https://drive.google.com/file/d/1mn_D5elQ7oGYmgIwb_B_0XAB9BQCVpG4/preview" },
+        { name: "Implementation of Stack using Array", type: "📄", priority: "medium", link: "https://drive.google.com/file/d/19urr-oXx9N8ZyZBctAMLXUT7oyuzO0RQ/preview" },
+        { name: "Operations on Stack", type: "📄", priority: "medium", link: "https://drive.google.com/file/d/1f6bH73v5Y2jmbzJk1zhktqnF3XfUj3pg/preview" },
+        { name: "Infix, Prefix, Postfix Expressions", type: "📄", priority: "medium", link: "https://drive.google.com/file/d/1u1Y0zViIHtJ0mN8y1DTHZdsnvyTM3ea7/preview" },
+        { name: "Evaluation of Postfix Expression", type: "📄", priority: "medium", link: "https://drive.google.com/file/d/1yjkHDcrFCU7r9OQ4qI-jKmvSAGMVotbO/preview" },
+      ],
+      2: [
+        { name: "Introduction to Queue and Its Operations", type: "📄", priority: "medium", link: "https://drive.google.com/file/d/1P6HbjObKZGxSEL3GuzDpC5OFzhGeqJOL/preview" },
+        { name: "Circular Queue (cqueue)", type: "📄", priority: "medium", link: "https://drive.google.com/file/d/1boSPEdgk4GNAOnN7ichd47ermI3ToVLh/preview" },
+        { name: "Dequeue and Priority Queue", type: "📄", priority: "medium", link: "https://drive.google.com/file/d/1za9Nrs7bateGyP45Qsx8nQtT8_bITZzX/preview" },
+        { name: "Priority Queue and Multiple Queue", type: "📄", priority: "medium", link: "https://drive.google.com/file/d/1qDSmFqkjaM-8_9Qx0vNP7zNAAM0zI7Yg/preview" },
+        { name: "Program for Circular Queue", type: "📄", priority: "medium", link: "https://drive.google.com/file/d/1flbOr6PFbIJ3pw5vJv_qb8rxrTTiYNQM/preview" },
+      ],
+      3: [
+        { name: "Introduction to Linked List", type: "📄", priority: "medium", link: "https://drive.google.com/file/d/1N7OlAyVHKQQmaS-YBJtJbw50IkGFzTuy/preview" },
+        { name: "Creating a Node for Singly Linked List", type: "📄", priority: "medium", link: "https://drive.google.com/file/d/1YIl6Re0K0hHQ1co9sBrLWvkXx4mh7_G_/preview" },
+        { name: "Operations on a Singly Linked List", type: "📄", priority: "medium", link: "https://drive.google.com/file/d/1-sOEMreJoS2l589fsxd6OWMrYN7FuF7S/preview" },
+        { name: "Introduction to Doubly Linked List", type: "📄", priority: "medium", link: "https://drive.google.com/file/d/1gESbY9_Cjya-j8q8gBieialJNAP5THBQ/preview" },
+        { name: "Introduction to Circular Linked List", type: "📄", priority: "medium", link: "https://drive.google.com/file/d/115fkEG1tq6TMmEBjqxCczdqzJltAtvPf/preview" },
+        { name: "Traversing a Singly Linked List", type: "📄", priority: "medium", link: "https://drive.google.com/file/d/1zVyjpH5Pob20hL-lS84bafHuEZAOuoBT/preview" },
+      ],
+      4: [
+        { name: "Binary Search Tree", type: "📄", priority: "medium", link: "https://drive.google.com/file/d/1KVEL0NKm0vu16-_T0NlOUiuZRCIvScn7/preview" },
+        { name: "Binary Search Tree (Compressed)", type: "📄", priority: "medium", link: "https://drive.google.com/file/d/1p2Fw4RnLP7E4CnewyPF4DwmH1MRbSeca/preview" },
+        { name: "Binary Search", type: "📄", priority: "medium", link: "https://drive.google.com/file/d/1NrxKGKNIww7lqUQPR3mI8ta-rzrTkaF-/preview" },
+        { name: "Binary Tree Traversals", type: "📄", priority: "medium", link: "https://drive.google.com/file/d/1GJ8ptrN2S1N812vsgMLB036ZbB3drdAo/preview" },
+        { name: "Binary Trees", type: "📄", priority: "medium", link: "https://drive.google.com/file/d/1Z7A003DiJxfCcVAD7_XE2OvaGHPnRp0X/preview" },
+        { name: "Trees", type: "📄", priority: "medium", link: "https://drive.google.com/file/d/1B8S2UYzvNKoWuVZnqmN7jk0SSN_F8olO/preview" },
+        { name: "Sums on Construction of Binary Trees from Traversals", type: "📄", priority: "medium", link: "https://drive.google.com/file/d/1cx2EiEZRJmGUyHXPYqcUgYxNjBiSYGLR/preview" },
+      ],
+      5: [
+        { name: "Application of Stack", type: "📄", priority: "medium", link: "https://drive.google.com/file/d/1nDCi3I_2mdSEtvtySQIYxatWs_5sS6h5/preview" },
+        { name: "Conversion of Infix Expression to Postfix", type: "📄", priority: "medium", link: "https://drive.google.com/file/d/1j6jmZQYk8AyjK3m-T8PgdiXiUe1xxJJl/preview" },
+        { name: "Checking Validity of Parenthesis", type: "📄", priority: "medium", link: "https://drive.google.com/file/d/17f7W_gapafgMRZS_pHlojZi9rOaNFQkM/preview" },
+        { name: "Reversal of String", type: "📄", priority: "medium", link: "https://drive.google.com/file/d/1inOensAxwfSZciN6ZwxUJy_Wa2h_tnVb/preview" },
+        { name: "Sum on Huffman Coding", type: "📄", priority: "medium", link: "https://drive.google.com/file/d/13BsobE99aPnK_8X-uRL6rQ-wab7rQzMH/preview" },
+      ],
+    },
+    qb: [
+      { name: "Recursion", type: "📋", priority: "high", link: "https://drive.google.com/file/d/1AScEBRdKn6LnO2oKnF9mnLj-lulBHbyh/preview" },
+      { name: "Module 0 — Structure", type: "📋", priority: "high", link: "https://drive.google.com/file/d/1JneZJIWvDwgRZFF9N0I39Gzz4qA7Lr2S/preview" },
+      { name: "Pointer", type: "📋", priority: "high", link: "https://drive.google.com/file/d/1Gv2EyX5y_sotxe5rov1j9MWIB-DiKYJh/preview" },
+      { name: "Module 0 — Array", type: "📋", priority: "high", link: "https://drive.google.com/file/d/1POEvUXrT94gTeIR2UoZv2BTB88p581eB/preview" },
+    ],
+    resources: [],
+  },
+];
+
+const EXAM_DATA = [
+  { date: "2026-05-11", subject: "Applied Mathematics-II", subjectId: "am", code: "10521" },
+  { date: "2026-05-13", subject: "Engineering Graphics",   subjectId: "eg", code: "10522" },
+  { date: "2026-05-15", subject: "Data Structure",         subjectId: "pc", code: "10523" },
+  { date: "2026-05-18", subject: "Semiconductor Physics",  subjectId: "ep", code: "10552" },
+  { date: "2026-05-20", subject: "Engineering Materials",  subjectId: "ec", code: "10557" },
+];
+
+let currentSubjectId = null;
+let currentInnerTab = "notes";
+let moduleState = JSON.parse(localStorage.getItem("moduleState") || "{}");
+let recentViewed = JSON.parse(localStorage.getItem("recentViewed") || "[]");
+let darkMode = localStorage.getItem("darkMode") !== null ? localStorage.getItem("darkMode") === "true" : true;
+
+document.addEventListener("DOMContentLoaded", () => {
+  if (darkMode) applyDark();
+  buildSubjectCards();
+  renderRecent();
+  buildTimetable();
+});
+
+function toggleDark() { darkMode = !darkMode; localStorage.setItem("darkMode", darkMode); applyDark(); }
+function applyDark() { document.documentElement.setAttribute("data-theme", darkMode ? "dark" : "light"); document.getElementById("dark-btn").textContent = darkMode ? "☀️ Light" : "🌙 Dark"; }
+
+function showPage(page) {
+  document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+  document.querySelectorAll(".page-tab").forEach(t => t.classList.remove("active"));
+  document.getElementById("page-" + page).classList.add("active");
+  if (page !== "subject") document.getElementById("tab-" + page)?.classList.add("active");
+}
+
+function buildSubjectCards() {
+  const grid = document.getElementById("subjects-grid");
+  grid.innerHTML = "";
+  SUBJECTS.forEach(s => {
+    const done = countDone(s.id);
+    const total = s.modules.length;
+    const pct = Math.round((done / total) * 100);
+    grid.innerHTML += `<div class="subject-card" data-subject="${s.id}" onclick="openSubject('${s.id}')">
+      <div class="card-top"><div class="card-dot" style="background:${s.color}"></div><div class="card-name">${s.name}</div><div class="card-code">${s.id.toUpperCase()}</div></div>
+      <div class="progress-wrap"><div class="progress-label"><span>Modules done</span><span>${done}/${total}</span></div><div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div></div>
+      <div class="card-open-btn">Open subject →</div></div>`;
+  });
+}
+
+function countDone(subjectId) { const key = subjectId + "_modules"; const state = moduleState[key] || []; return state.filter(Boolean).length; }
+
+function openSubject(id) {
+  currentSubjectId = id;
+  const s = SUBJECTS.find(x => x.id === id);
+  document.getElementById("sp-title").textContent = s.name;
+  document.getElementById("sp-bar").style.background = s.color;
+  buildInnerTabs(s);
+  showInnerTab("notes", s);
+  showPage("subject");
+}
+
+function buildInnerTabs(s) {
+  document.getElementById("inner-tabs").innerHTML = `
+    <button class="inner-tab active" id="itab-notes" onclick="showInnerTab('notes')" style="background:${s.color}">📝 Notes</button>
+    <button class="inner-tab" id="itab-qb" onclick="showInnerTab('qb')">❓ Question Bank</button>`;
+}
+
+function showInnerTab(tab) {
+  currentInnerTab = tab;
+  const s = SUBJECTS.find(x => x.id === currentSubjectId);
+  document.getElementById("itab-notes")?.classList.toggle("active", tab === "notes");
+  document.getElementById("itab-qb")?.classList.toggle("active", tab === "qb");
+  if (tab === "notes") { document.getElementById("sp-notes-content").style.display = ""; document.getElementById("sp-qb-content").style.display = "none"; renderNotesTab(s); }
+  else { document.getElementById("sp-notes-content").style.display = "none"; document.getElementById("sp-qb-content").style.display = ""; renderQBTab(s); }
+}
+
+function renderNotesTab(s) { document.getElementById("sp-notes-content").innerHTML = renderPinned(s) + renderModules(s); }
+function renderQBTab(s) { document.getElementById("sp-qb-content").innerHTML = renderFileList(s.qb, "Question Bank"); }
+
+function renderPinned(s) {
+  if (!s.pinned || !s.pinned.length) return "";
+  return `<div class="pinned-section"><div class="pinned-header">📌 Pinned Files</div><div class="pinned-list">${s.pinned.map(f => fileCardHTML(f, s, true)).join("")}</div></div>`;
+}
+
+function renderModules(s) {
+  const key = s.id + "_modules";
+  const state = moduleState[key] || Array(s.modules.length).fill(false);
+  const openKey = s.id + "_open";
+  const openState = JSON.parse(sessionStorage.getItem(openKey) || "{}");
+  const done = state.filter(Boolean).length;
+  const pct = Math.round((done / s.modules.length) * 100);
+  return `<div class="modules-section">
+    <div class="section-label" style="margin-bottom:10px">Modules — ${done}/${s.modules.length} done &nbsp;<span style="font-size:0.75rem; font-weight:400; text-transform:none; letter-spacing:0">(tick to mark done, click title to expand)</span></div>
+    <div class="progress-bar" style="margin-bottom:12px; height:8px"><div class="progress-fill" style="width:${pct}%; background:${s.color}"></div></div>
+    ${s.modules.map((m, i) => {
+      const files = (s.notes && s.notes[i]) ? s.notes[i] : [];
+      const isOpen = !!openState[i];
+      return `<div class="module-item ${state[i] ? "done" : ""}" style="flex-direction:column; cursor:default; padding:0; overflow:hidden;">
+        <div style="display:flex; align-items:center; gap:12px; padding:14px 16px; cursor:pointer;" onclick="toggleModuleExpand('${s.id}', ${i}, event)">
+          <div class="module-check ${state[i] ? "checked" : ""}" style="${state[i] ? "background:" + s.color : ""}" onclick="event.stopPropagation(); toggleModule('${s.id}', ${i})">${state[i] ? "✓" : ""}</div>
+          <div class="module-info"><div class="module-name">${m}</div><div class="module-sub">${files.length} file${files.length !== 1 ? "s" : ""} uploaded</div></div>
+          <div style="font-size:0.8rem; color:var(--text-muted); transition:transform 0.2s; transform:rotate(${isOpen ? "90" : "0"}deg)" id="arrow-${s.id}-${i}">▶</div>
+        </div>
+        <div id="module-files-${s.id}-${i}" style="display:${isOpen ? "flex" : "none"}; flex-direction:column; gap:8px; padding:0 16px 14px; background:var(--surface2); border-top:1px solid var(--border);">
+          ${files.length ? files.map((f, fi) => `<div style="margin-top:${fi === 0 ? "10px" : "0"}">${fileCardHTML(f)}</div>`).join("") : `<div style="padding:14px 0; font-size:0.82rem; color:var(--text-muted); text-align:center;">No files yet for Module ${i+1}</div>`}
+        </div></div>`;
+    }).join("")}</div>`;
+}
+
+function renderFileList(files, label) {
+  if (!files || !files.length) return "";
+  return `<div style="margin-bottom:16px"><div class="section-label" style="margin-bottom:10px">${label} Files</div>${files.map(f => fileCardHTML(f)).join("")}</div>`;
+}
+
+function fileCardHTML(f, s, pinned = false) {
+  return `<div class="file-card" onclick="openFile('${encodeURIComponent(f.link)}','${encodeURIComponent(f.name)}')">
+    <div class="file-icon">${f.type || "📄"}</div>
+    <div class="file-info"><div class="file-name">${f.name}</div>${f.module ? `<div class="file-meta">${f.module}</div>` : ""}</div>
+    <span class="priority-badge priority-${f.priority}">${f.priority}</span>
+    ${pinned ? '<span class="file-pin">📌</span>' : ""}</div>`;
+}
+
+function toggleModule(subjectId, idx) {
+  const key = subjectId + "_modules";
+  if (!moduleState[key]) moduleState[key] = Array(6).fill(false);
+  moduleState[key][idx] = !moduleState[key][idx];
+  localStorage.setItem("moduleState", JSON.stringify(moduleState));
+  showInnerTab(currentInnerTab);
+  buildSubjectCards();
+}
+
+function toggleModuleExpand(subjectId, idx, event) {
+  const openKey = subjectId + "_open";
+  const openState = JSON.parse(sessionStorage.getItem(openKey) || "{}");
+  openState[idx] = !openState[idx];
+  sessionStorage.setItem(openKey, JSON.stringify(openState));
+  const filesEl = document.getElementById(`module-files-${subjectId}-${idx}`);
+  const arrowEl = document.getElementById(`arrow-${subjectId}-${idx}`);
+  if (filesEl) filesEl.style.display = openState[idx] ? "flex" : "none";
+  if (arrowEl) arrowEl.style.transform = openState[idx] ? "rotate(90deg)" : "rotate(0deg)";
+}
+
+function openFile(encodedLink, encodedName) {
+  const link = decodeURIComponent(encodedLink);
+  const name = decodeURIComponent(encodedName);
+  addRecent(name, link, currentSubjectId);
+  const match = link.match(/\/d\/([a-zA-Z0-9_-]+)/);
+  if (match) window.open("https://drive.google.com/file/d/" + match[1] + "/preview", "_blank");
+  else window.open(link, "_blank");
+}
+
+function addRecent(name, link, subjectId) {
+  const entry = { name, link, subjectId, ts: Date.now() };
+  recentViewed = recentViewed.filter(r => r.name !== name);
+  recentViewed.unshift(entry);
+  if (recentViewed.length > 6) recentViewed.pop();
+  localStorage.setItem("recentViewed", JSON.stringify(recentViewed));
+  renderRecent();
+}
+
+function renderRecent() {
+  const list = document.getElementById("recent-list");
+  if (!recentViewed.length) { list.innerHTML = '<span style="font-size:0.82rem; color:var(--text-muted)">Nothing yet — open a file to track it here.</span>'; return; }
+  list.innerHTML = recentViewed.map(r => {
+    const s = SUBJECTS.find(x => x.id === r.subjectId);
+    const color = s ? s.color : "var(--text-muted)";
+    return `<div class="recent-chip" onclick="openFile('${encodeURIComponent(r.link)}','${encodeURIComponent(r.name)}')"><span class="chip-dot" style="background:${color}"></span>${r.name}</div>`;
+  }).join("");
+}
+
+function handleSearch(query) {
+  const q = query.trim().toLowerCase();
+  const res = document.getElementById("search-results");
+  const list = document.getElementById("search-results-list");
+  if (!q) { res.style.display = "none"; return; }
+  res.style.display = "block";
+  const matches = [];
+  SUBJECTS.forEach(s => {
+    const notesFlat = s.notes ? Object.values(s.notes).flat() : [];
+    [...(s.pinned||[]), ...notesFlat, ...(s.qb||[])].forEach(f => {
+      if (f.name.toLowerCase().includes(q) || s.name.toLowerCase().includes(q))
+        matches.push({ ...f, subjectName: s.name, subjectId: s.id, subjectColor: s.color });
+    });
+  });
+  if (!matches.length) { list.innerHTML = '<div style="padding:8px 10px; font-size:0.82rem; color:var(--text-muted)">No results found.</div>'; return; }
+  list.innerHTML = matches.map(m => `<div class="search-result-item" onclick="openFile('${encodeURIComponent(m.link)}','${encodeURIComponent(m.name)}')">
+    <span style="width:8px;height:8px;border-radius:50%;background:${m.subjectColor};flex-shrink:0;display:inline-block"></span>
+    <span style="flex:1">${m.name}</span><span style="font-size:0.72rem;color:var(--text-muted)">${m.subjectName}</span></div>`).join("");
+}
+
+function buildTimetable() {
+  const today = new Date(); today.setHours(0,0,0,0);
+  const cCards = document.getElementById("countdown-cards");
+  cCards.innerHTML = EXAM_DATA.map(e => {
+    const examDate = new Date(e.date);
+    const diff = Math.ceil((examDate - today) / (1000 * 60 * 60 * 24));
+    const s = SUBJECTS.find(x => x.id === e.subjectId);
+    const color = s ? s.color : "#999";
+    return `<div class="countdown-card" style="border-top: 4px solid ${color}">
+      <div class="countdown-subject">${e.subject}</div>
+      <div class="countdown-days" style="color:${color}">${diff > 0 ? diff : diff === 0 ? "Today!" : "✓"}</div>
+      <div class="countdown-label">${diff > 0 ? "days to go" : diff === 0 ? "🎯 Exam today!" : "exam done"}</div>
+      <div class="countdown-date">${formatDate(e.date)}</div></div>`;
+  }).join("");
+  const days = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+  document.getElementById("tt-body").innerHTML = EXAM_DATA.map(e => {
+    const examDate = new Date(e.date);
+    const isToday = examDate.getTime() === today.getTime();
+    const s = SUBJECTS.find(x => x.id === e.subjectId);
+    const color = s ? s.color : "#999";
+    return `<tr class="${isToday ? "today" : ""}">
+      <td>${formatDate(e.date)} ${isToday ? '<span class="tt-today-badge">Today</span>' : ""}</td>
+      <td>${days[examDate.getDay()]}</td>
+      <td style="font-family:var(--font-head); font-weight:700; color:var(--text-muted)">${e.code}</td>
+      <td><span class="tt-subject-pill" style="background:${color}">${e.subject}</span></td></tr>`;
+  }).join("");
+}
+
+function formatDate(dateStr) { const d = new Date(dateStr); return d.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }); }
+</script>
+</body>
+</html>
