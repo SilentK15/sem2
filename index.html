@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>APSIT Notes — Sem 2</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg: #0a0a0b;
+  --surface: #111113;
+  --surface2: #1a1a1e;
+  --surface3: #222228;
+  --border: rgba(255,255,255,0.07);
+  --border2: rgba(255,255,255,0.12);
+  --text: #f0ede8;
+  --muted: #6b6872;
+  --muted2: #9a97a3;
+  --eg: #ff6b47; --eg-dim: rgba(255,107,71,0.12); --eg-glow: rgba(255,107,71,0.25);
+  --am: #4f9eff; --am-dim: rgba(79,158,255,0.12); --am-glow: rgba(79,158,255,0.25);
+  --ep: #f5c842; --ep-dim: rgba(245,200,66,0.12); --ep-glow: rgba(245,200,66,0.25);
+  --ec: #3ecf8e; --ec-dim: rgba(62,207,142,0.12); --ec-glow: rgba(62,207,142,0.25);
+  --pc: #b47cff; --pc-dim: rgba(180,124,255,0.12); --pc-glow: rgba(180,124,255,0.25);
+  --font-serif: 'Instrument Serif', serif;
+  --font-sans: 'Geist', sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{font-family:var(--font-sans);background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;}
+
+/* NOISE TEXTURE */
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");pointer-events:none;z-index:0;opacity:0.6;}
+
+/* LAYOUT */
+.shell{display:grid;grid-template-columns:260px 1fr;min-height:100vh;position:relative;z-index:1;}
+
+/* SIDEBAR */
+.sidebar{position:sticky;top:0;height:100vh;display:flex;flex-direction:column;border-right:1px solid var(--border);background:var(--surface);overflow:hidden;}
+.sidebar-top{padding:24px 20px 20px;}
+.logo{font-family:var(--font-serif);font-size:1.5rem;color:var(--text);line-height:1.1;margin-bottom:4px;}
+.logo em{font-style:italic;opacity:0.5;}
+.semester-badge{display:inline-block;font-size:0.65rem;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:20px;}
+
+/* SEARCH */
+.search-box{position:relative;margin-bottom:8px;}
+.search-box input{width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:9px 12px 9px 36px;font-family:var(--font-sans);font-size:0.82rem;color:var(--text);outline:none;transition:border-color 0.2s,box-shadow 0.2s;}
+.search-box input::placeholder{color:var(--muted);}
+.search-box input:focus{border-color:rgba(255,255,255,0.2);box-shadow:0 0 0 3px rgba(255,255,255,0.04);}
+.search-icon{position:absolute;left:11px;top:50%;transform:translateY(-50%);font-size:0.85rem;opacity:0.35;pointer-events:none;}
+.search-hint{font-size:0.68rem;color:var(--muted);padding:0 4px;margin-bottom:16px;}
+.search-hint kbd{background:var(--surface3);border:1px solid var(--border2);border-radius:4px;padding:1px 5px;font-size:0.65rem;font-family:var(--font-sans);}
+
+/* NAV */
+.nav-label{font-size:0.62rem;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--muted);padding:0 8px;margin-bottom:8px;}
+.nav-list{display:flex;flex-direction:column;gap:2px;padding:0 8px;flex:1;overflow-y:auto;}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:9px;cursor:pointer;transition:background 0.15s;border:none;background:transparent;width:100%;text-align:left;color:var(--text);}
+.nav-item:hover{background:var(--surface2);}
+.nav-item.active{background:var(--surface3);}
+.nav-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.nav-name{font-size:0.83rem;font-weight:400;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.nav-count{font-size:0.68rem;color:var(--muted);background:var(--surface3);padding:2px 6px;border-radius:5px;}
+.nav-divider{height:1px;background:var(--border);margin:12px 8px;}
+
+.sidebar-bottom{padding:16px 16px 20px;border-top:1px solid var(--border);}
+.theme-btn{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:8px 12px;font-family:var(--font-sans);font-size:0.78rem;color:var(--muted2);cursor:pointer;transition:all 0.2s;text-align:center;}
+.theme-btn:hover{border-color:var(--border2);color:var(--text);}
+
+/* MAIN CONTENT */
+.main{flex:1;min-width:0;padding:40px 48px;max-width:900px;}
+
+/* HOME */
+.page{display:none;}
+.page.active{display:block;animation:fadeUp 0.2s ease;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+
+.page-heading{font-family:var(--font-serif);font-size:2.8rem;font-weight:400;line-height:1.1;margin-bottom:6px;}
+.page-heading em{font-style:italic;opacity:0.45;}
+.page-sub{color:var(--muted2);font-size:0.88rem;margin-bottom:36px;}
+
+/* EXAM STRIP */
+.exam-strip{display:flex;gap:10px;margin-bottom:36px;overflow-x:auto;padding-bottom:4px;}
+.exam-strip::-webkit-scrollbar{height:3px;}
+.exam-strip::-webkit-scrollbar-track{background:transparent;}
+.exam-strip::-webkit-scrollbar-thumb{background:var(--surface3);border-radius:2px;}
+.exam-pill{flex-shrink:0;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 16px;min-width:130px;cursor:pointer;transition:all 0.2s;position:relative;overflow:hidden;}
+.exam-pill::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;border-radius:12px 12px 0 0;}
+.exam-pill:hover{border-color:var(--border2);transform:translateY(-2px);}
+.ep-subj{font-size:0.68rem;color:var(--muted);margin-bottom:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.ep-days{font-family:var(--font-serif);font-size:2rem;line-height:1;}
+.ep-label{font-size:0.65rem;color:var(--muted);margin-top:2px;}
+.ep-date{font-size:0.7rem;font-weight:500;margin-top:8px;opacity:0.7;}
+
+/* SUBJECTS GRID */
+.subjects-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;}
+.subject-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;cursor:pointer;transition:all 0.2s;position:relative;overflow:hidden;}
+.subject-card:hover{border-color:var(--border2);transform:translateY(-3px);}
+.sc-accent{position:absolute;top:0;left:0;right:0;height:3px;border-radius:14px 14px 0 0;}
+.sc-glow{position:absolute;top:-40px;right:-40px;width:100px;height:100px;border-radius:50%;opacity:0;transition:opacity 0.3s;pointer-events:none;}
+.subject-card:hover .sc-glow{opacity:1;}
+.sc-top{display:flex;align-items:center;gap:10px;margin-bottom:16px;}
+.sc-dot{width:9px;height:9px;border-radius:50%;}
+.sc-name{font-size:0.9rem;font-weight:500;flex:1;}
+.sc-code{font-size:0.68rem;color:var(--muted);background:var(--surface2);padding:3px 8px;border-radius:6px;}
+.sc-modules{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:14px;}
+.sc-mod{width:10px;height:10px;border-radius:3px;background:var(--surface3);transition:background 0.2s;}
+.sc-mod.done{opacity:1;}
+.sc-footer{display:flex;justify-content:space-between;align-items:center;}
+.sc-progress-text{font-size:0.72rem;color:var(--muted);}
+.sc-arrow{font-size:0.8rem;color:var(--muted);transition:transform 0.2s;}
+.subject-card:hover .sc-arrow{transform:translateX(4px);}
+
+/* SECTION LABEL */
+.section-label{font-size:0.65rem;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:12px;}
+
+/* RECENT */
+.recent-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:36px;}
+.recent-chip{display:flex;align-items:center;gap:7px;padding:6px 12px;background:var(--surface);border:1px solid var(--border);border-radius:999px;font-size:0.78rem;cursor:pointer;transition:all 0.15s;color:var(--text);}
+.recent-chip:hover{border-color:var(--border2);}
+.chip-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+
+/* SUBJECT PAGE */
+.sp-header{display:flex;align-items:center;gap:16px;margin-bottom:32px;}
+.back-btn{background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:7px 14px;font-family:var(--font-sans);font-size:0.8rem;color:var(--muted2);cursor:pointer;transition:all 0.2s;display:flex;align-items:center;gap:6px;}
+.back-btn:hover{border-color:var(--border2);color:var(--text);}
+.sp-title{font-family:var(--font-serif);font-size:2rem;font-weight:400;flex:1;}
+.sp-accent{width:32px;height:3px;border-radius:999px;}
+
+/* INNER TABS */
+.inner-tabs{display:flex;gap:6px;margin-bottom:28px;}
+.inner-tab{padding:7px 18px;border-radius:999px;border:1px solid var(--border);background:transparent;font-family:var(--font-sans);font-size:0.8rem;font-weight:500;cursor:pointer;color:var(--muted2);transition:all 0.2s;}
+.inner-tab:hover{border-color:var(--border2);color:var(--text);}
+.inner-tab.active{border-color:transparent;color:#fff;font-weight:600;}
+
+/* MODULES — EXPANDED BY DEFAULT */
+.module-block{background:var(--surface);border:1px solid var(--border);border-radius:14px;margin-bottom:10px;overflow:hidden;transition:border-color 0.2s;}
+.module-block:hover{border-color:var(--border2);}
+.module-header{display:flex;align-items:center;gap:12px;padding:16px 18px;cursor:pointer;}
+.mod-check{width:20px;height:20px;border-radius:7px;border:1.5px solid var(--border2);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:0.72rem;cursor:pointer;transition:all 0.2s;}
+.mod-check.checked{border-color:transparent;color:#fff;}
+.mod-info{flex:1;}
+.mod-name{font-size:0.88rem;font-weight:500;margin-bottom:2px;}
+.mod-sub{font-size:0.72rem;color:var(--muted);}
+.mod-toggle{font-size:0.7rem;color:var(--muted);transition:transform 0.2s;width:20px;text-align:center;}
+.mod-toggle.open{transform:rotate(90deg);}
+
+/* FILES LIST — always visible under module */
+.module-files{padding:0 18px 14px;display:flex;flex-direction:column;gap:6px;border-top:1px solid var(--border);}
+.module-files.hidden{display:none;}
+.file-row{display:flex;align-items:center;gap:10px;padding:9px 12px;background:var(--surface2);border-radius:9px;cursor:pointer;transition:all 0.15s;border:1px solid transparent;}
+.file-row:hover{background:var(--surface3);border-color:var(--border);}
+.file-name{font-size:0.82rem;flex:1;}
+.no-files{font-size:0.78rem;color:var(--muted);padding:10px 0;text-align:center;}
+
+/* QB FILES */
+.qb-grid{display:flex;flex-direction:column;gap:8px;}
+
+/* TIMETABLE */
+.countdown-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-bottom:36px;}
+.cd-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px;position:relative;overflow:hidden;transition:all 0.2s;}
+.cd-card:hover{transform:translateY(-2px);border-color:var(--border2);}
+.cd-card::before{content:'';position:absolute;bottom:0;left:0;right:0;height:3px;}
+.cd-subj{font-size:0.7rem;color:var(--muted);margin-bottom:8px;}
+.cd-days{font-family:var(--font-serif);font-size:2.4rem;line-height:1;}
+.cd-unit{font-size:0.72rem;color:var(--muted);margin-top:3px;}
+.cd-date{font-size:0.72rem;font-weight:500;margin-top:10px;opacity:0.65;}
+
+.tt-wrap{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;}
+.tt-row{display:grid;grid-template-columns:110px 80px 80px 1fr;align-items:center;padding:14px 20px;border-bottom:1px solid var(--border);transition:background 0.15s;}
+.tt-row:last-child{border-bottom:none;}
+.tt-row:hover{background:var(--surface2);}
+.tt-row.header{background:var(--surface2);font-size:0.65rem;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);}
+.tt-row.today{background:rgba(255,255,255,0.03);}
+.tt-date{font-size:0.82rem;font-weight:500;}
+.tt-day{font-size:0.78rem;color:var(--muted2);}
+.tt-code{font-size:0.75rem;font-family:var(--font-sans);font-weight:600;color:var(--muted);}
+.tt-subj-pill{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:999px;font-size:0.78rem;font-weight:600;color:#fff;}
+.today-badge{font-size:0.6rem;font-weight:700;background:rgba(62,207,142,0.2);color:#3ecf8e;padding:2px 7px;border-radius:999px;text-transform:uppercase;letter-spacing:0.5px;margin-left:6px;}
+
+/* SEARCH RESULTS OVERLAY */
+.search-results{display:none;position:absolute;top:100%;left:0;right:0;background:var(--surface);border:1px solid var(--border2);border-radius:12px;margin-top:6px;overflow:hidden;z-index:200;box-shadow:0 16px 40px rgba(0,0,0,0.4);}
+.search-wrap{position:relative;}
+.sr-item{display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;transition:background 0.1s;}
+.sr-item:hover{background:var(--surface2);}
+.sr-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.sr-name{font-size:0.82rem;flex:1;}
+.sr-subj{font-size:0.7rem;color:var(--muted);}
+.sr-empty{padding:14px;font-size:0.8rem;color:var(--muted);text-align:center;}
+
+/* PROGRESS BAR STRIP */
+.prog-strip{display:flex;gap:3px;margin-bottom:6px;}
+.prog-seg{flex:1;height:3px;border-radius:999px;background:var(--surface3);transition:background 0.3s;}
+.prog-seg.done{opacity:1;}
+
+/* LIGHT MODE */
+[data-theme="light"]{
+  --bg:#f5f3ef;--surface:#ffffff;--surface2:#f0ede8;--surface3:#e8e4de;
+  --border:rgba(0,0,0,0.07);--border2:rgba(0,0,0,0.13);
+  --text:#1a1815;--muted:#9a958e;--muted2:#6b6660;
+}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{width:4px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--surface3);border-radius:2px;}
+
+@media(max-width:700px){
+  .shell{grid-template-columns:1fr;}
+  .sidebar{position:fixed;bottom:0;left:0;right:0;top:auto;height:auto;flex-direction:row;border-right:none;border-top:1px solid var(--border);z-index:100;padding:0;}
+  .sidebar-top,.sidebar-bottom,.nav-label,.nav-divider,.semester-badge,.search-wrap,.search-hint{display:none;}
+  .nav-list{flex-direction:row;overflow-x:auto;padding:10px 12px;gap:4px;}
+  .nav-item{flex-direction:column;gap:3px;padding:8px 10px;min-width:60px;align-items:center;}
+  .nav-name{font-size:0.65rem;text-align:center;}
+  .nav-count{display:none;}
+  .main{padding:20px 16px 100px;}
+  .page-heading{font-size:1.9rem;}
+  .subjects-grid{grid-template-columns:1fr;}
+  .countdown-grid{grid-template-columns:1fr 1fr;}
+  .tt-row{grid-template-columns:90px 70px 1fr;font-size:0.78rem;}
+  .tt-code{display:none;}
+}
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-top">
+      <div class="logo">APSIT<br/><em>Notes</em></div>
+      <div class="semester-badge">Sem 2 · 2025–26</div>
+      <div class="search-wrap">
+        <div class="search-box">
+          <span class="search-icon">⌕</span>
+          <input type="text" id="search-input" placeholder="Search notes…" oninput="handleSearch(this.value)" autocomplete="off"/>
+          <div class="search-results" id="search-results"></div>
+        </div>
+        <div class="search-hint">Press <kbd>/</kbd> to focus</div>
+      </div>
+      <div class="nav-label">Subjects</div>
+      <div class="nav-list" id="nav-list"></div>
+    </div>
+    <div style="flex:1"></div>
+    <div style="padding:8px 16px;">
+      <div class="nav-divider" style="margin:0 -8px 12px;"></div>
+      <div class="nav-label">Pages</div>
+      <div style="display:flex;flex-direction:column;gap:2px;">
+        <button class="nav-item" onclick="showPage('home')" id="nav-home">
+          <span style="font-size:1rem">⌂</span>
+          <span class="nav-name">Home</span>
+        </button>
+        <button class="nav-item" onclick="showPage('timetable')" id="nav-timetable">
+          <span style="font-size:1rem">◷</span>
+          <span class="nav-name">Timetable</span>
+        </button>
+      </div>
+    </div>
+    <div class="sidebar-bottom">
+      <button class="theme-btn" onclick="toggleTheme()" id="theme-btn">◐ Toggle Light Mode</button>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <!-- HOME -->
+    <div class="page active" id="page-home">
+      <div class="page-heading">Good to see<br/><em>you back.</em></div>
+      <div class="page-sub">Pick a subject from the sidebar, or jump in below.</div>
+
+      <div class="section-label" style="margin-bottom:10px">Exams Countdown</div>
+      <div class="exam-strip" id="exam-strip"></div>
+
+      <div class="section-label" style="margin-bottom:10px">Recently Viewed</div>
+      <div class="recent-row" id="recent-row">
+        <span style="font-size:0.8rem;color:var(--muted)">Nothing yet — open a file to track it here.</span>
+      </div>
+
+      <div class="section-label" style="margin-bottom:12px">All Subjects</div>
+      <div class="subjects-grid" id="subjects-grid"></div>
+    </div>
+
+    <!-- SUBJECT PAGE -->
+    <div class="page" id="page-subject">
+      <div class="sp-header">
+        <button class="back-btn" onclick="showPage('home')">← Back</button>
+        <div class="sp-title" id="sp-title"></div>
+        <div class="sp-accent" id="sp-accent"></div>
+      </div>
+      <div class="inner-tabs" id="inner-tabs"></div>
+      <div id="sp-notes"></div>
+      <div id="sp-qb" style="display:none"></div>
+    </div>
+
+    <!-- TIMETABLE -->
+    <div class="page" id="page-timetable">
+      <div class="page-heading">Exam<br/><em>Schedule.</em></div>
+      <div class="page-sub">End semester timetable — countdown updates daily.</div>
+      <div class="section-label" style="margin-bottom:12px">Days Remaining</div>
+      <div class="countdown-grid" id="countdown-grid"></div>
+      <div class="section-label" style="margin-bottom:12px">Full Schedule</div>
+      <div class="tt-wrap">
+        <div class="tt-row header"><div>Date</div><div>Day</div><div>Code</div><div>Subject</div></div>
+        <div id="tt-body"></div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+const SUBJECTS=[
+  {id:"eg",name:"Engineering Graphics",color:"var(--eg)",glow:"var(--eg-glow)",dim:"var(--eg-dim)",
+   modules:["Introduction & Drawing Instruments","Scales and Engineering Curves","Projection of Points & Lines","Projection of Planes","Projection of Solids","Isometric & Orthographic Views"],
+   notes:{
+    0:[{name:"Cycloidal Curve",type:"📄",priority:"medium",link:"https://drive.google.com/file/d/1cApUHU1hCq7xRkbfD8UK_VfbZ3I4zpsx/preview"},{name:"Engineering Curves — Involute",type:"📄",priority:"medium",link:"https://drive.google.com/file/d/1G674TD1EZYUXWqTJKcj-PQujrm1FE-hD/preview"},{name:"Engineering Curves (Presentation)",type:"📊",priority:"medium",link:"https://docs.google.com/presentation/d/1X9gPuvSZKgGxWMouKueiZ08lzkHSsrom/preview"},{name:"Module 1 — Solved Problems",type:"📄",priority:"medium",link:"https://drive.google.com/file/d/1tDonrPWh_B5Crse1yH6ClDhGWi8uQnAS/preview"}],
+    1:[{name:"Projection of Points",type:"📄",priority:"medium",link:"https://drive.google.com/file/d/14K8LTqpRRVl0uKg-acTR2J4dIGe9RYjg/preview"},{name:"Introduction to Projection of Lines",type:"📄",priority:"medium",link:"https://drive.google.com/file/d/1CA5UKki2xy62xOENkdQHtcs0eSHLKOe_/preview"},{name:"Projection of Planes 1",type:"📄",priority:"medium",link:"https://drive.google.com/file/d/1EwC8VINBNDHeQ5tXHARMnQA4i1tc3kpA/preview"},{name:"Module 2 — Solved Problems",type:"📄",priority:"medium",link:"https://drive.google.com/file/d/1NZjYdVUDdSRFWV8UDJWM8cMbsIlEnT7V/preview"},{name:"Projection of Lines — Problem Set 1",type:"📄",priority:"medium",link:"https://drive.google.com/file/d/1y26DI5Pn65rqhzuue__A7KA6w4De4CHv/preview"}],
+    2:[],3:[],4:[],5:[]
+   },
+   qb:[{name:"EG CAD QB",type:"📋",priority:"high",link:"https://drive.google.com/file/d/1OSaLMT79iaV_w_9qKV8U9eqkUt-anlU2/preview"},{name:"EG Question Bank 2024-25",type:"📋",priority:"high",link:"https://drive.google.com/file/d/1nzVbetUr5Y4vlHGM_9kli09GIbxYbaKE/preview"},{name:"EG IA1 QB",type:"📋",priority:"high",link:"https://drive.google.com/file/d/1INrrQsux1UiDqbcdLIBoxOxjJbJYNeWi/preview"}]},
+  {id:"am",name:"Applied Mathematics",color:"var(--am)",glow:"var(--am-glow)",dim:"var(--am-dim)",
+   modules:["Double Integration","Triple Integration","Application of Double Integrals","Gamma & Beta Functions","First Order First Degree DE","Linear DE & Numerical Methods"],
+   notes:{
+    0:[{name:"Double Integration — Theory",type:"📄",priority:"medium",link:"https://drive.google.com/file/d/12TRdG-G-YvBfGG7fU0TzHamm6KqH1Zks/preview"},{name:"Double Integration — Solved Examples",type:"📄",priority:"medium",link:"https://drive.google.com/file/d/1K3uC_bPGYHADZF2Rm0A-SO2zJpSBxdoD/preview"},{name:"DUIS — Theory",type:"📄",priority:"medium",link:"https://drive.google.com/file/d/1-nFI9jnVWahvu_k_YaUe4kHoB_jDEY5B/preview"},{name:"DUIS — Solved Examples",type:"📄",priority:"medium",link:"https://drive.google.com/file/d/1awZp7wYIi83adU7Sue443uN4K20Q5JoS/preview"}],
+    1:[{name:"Triple Integration — Theory",type:"📄",priority:"medium",link:"https://drive.google.com/file/d/1-em0ZNS870TfI8-n6lQOFcTgnb4veQ_6/preview"},{name:"Triple Integration — Solved Examples Type I",type:"📄",priority:"medium",link:"https://drive.google.com/file/d/1bwsjdBSo_WRyXr1dCHn13LYjlzl0LX92/preview"},{name:"Triple Integration — Solved Examples Type II",type:"📄",priority:"medium",link:"https://drive.google.com/file/d/1m5PG7-C4YoQq5mmYabGcxPKy_D_783Jc/preview"},{name:"Surfaces in 3D",type:"📄",priority:"medium",link:"https://drive.google.com/file/d/1HV6WwwT1k8yOkI_h5ViVZTtOhmamh9BY/preview"}],
+    2:[{name:"Application of Double Integrals — Solved Examples",type:"📄",priority:"high",link:"https://drive.google.com/file/d/1qP7Pj8aTcR9fSNHfQKIEABI1ynoXc_Bs/preview"}],
+    3:[{name:"Beta & Gamma Function — Theory",type:"📄",priority:"medium",link:"https://drive.google.com/file/d/1hRNVymAB88jzBEexAT1vaGCbg-q0mrHX/preview"},{name:"Gamma Function — Solved Examples",type:"📄",priority:"medium",link:"https://drive.google.com/file/d/1KK0NwjkAUrOnl3sKLnmmoAxdJazQg6Xj/preview"},{name:"Beta Function — Solved Problems",type:"📄",priority:"medium",link:"https://drive.google.com/file/d/1eFb2OpPWqfv48gqmVmgMMPIj-oiH--qs/preview"}],
+    4:[{name:"D.E. of First Order & First Degree — Theory",type:"📄",priority:"medium",link:"https://drive.google.com/file/d/1-V4GtEX4uXgalqsf_7sjNd0gqxc8ITwV/preview"},{name:"Exact D.E. — Solved Examples",type:"📄",priority:"medium",link:"https://drive.google.com/file/d/1ifVH3olynpGL-wIooBfOC3f1DBRJl3xo/preview"},{name:"Non Exact D.E. — Solved Examples Part I",type:"📄",priority:"medium",link:"https://drive.google.com/file/d/1EQCOgWKsr3jXQ4HGj6WAlVCZMIMD6tXn/preview"},{name:"Non Exact D.E. — Solved Examples Part II",type:"📄",priority:"medium",link:"https://drive.google.com/file/d/11IZOJzr8nXv44iDlZ1JMeOLVNnBgBv_0/preview"},{name:"Linear D.E. of First Order — Solved Examples",type:"📄",priority:"medium",link:"https://drive.google.com/file/d/1Tq5rOOwPCC1OAi7ePuWmujUTN0cM-Iy4/preview"},{name:"Reducible to Linear D.E. — Solved Examples",type:"📄",priority:"medium",link:"https://drive.google.com/file/d/1w_dBzC8DZcumYpw9TYCkL0HSbPP4hx98/preview"}],
+    5:[{name:"Linear D.E. with Constant Coefficients — Theory",type:"📄",priority:"medium",link:"https://drive.google.com/file/d/19x7eJoaKXUfKEdvVjsuEkg0Rd6z6oPuV/preview"},{name:"LDE Solved Examples Part I",type:"📄",priority:"medium",link:"https://drive.google.com/file/d/1zYHWoafWID3HuWTuL47wBngZcjy4X8fa/preview"},{name:"LDE Solved Examples Part II",type:"📄",priority:"medium",link:"https://drive.google.com/file/d/1tb3FxZ_Pu35GhhcWM4dmh9oGxqONLrXP/preview"},{name:"Method of Variation of Parameter",type:"📄",priority:"medium",link:"https://drive.google.com/file/d/1HQvFx55Pwu1cntr1XPdknA_HAaGSz9ht/preview"},{name:"Numerical Solutions to ODE — Theory",type:"📄",priority:"medium",link:"https://drive.google.com/file/d/1P4F01d-jJ-ePwha_BdlbcJGE5T6KlO_P/preview"},{name:"Numerical Solutions to ODE — Solved Examples",type:"📄",priority:"medium",link:"https://drive.google.com/file/d/1SXNn2T8h9kp2OOl3ul_iqbK8X7wayrKi/preview"},{name:"Numerical Integration — Theory & Solved Examples",type:"📄",priority:"medium",link:"https://drive.google.com/file/d/1yK_LtGpAoUqqUW_rkVcjkADY1q3E7GSi/preview"}]
+   },
+   qb:[{name:"Question Bank AM2",type:"📋",priority:"high",link:"https://drive.google.com/file/d/1IR9TAF2QGelQHhQ0WzJg20DX_Ex6r72t/preview"},{name:"PYQ AM-II 2025-26",type:"📋",priority:"high",link:"https://drive.google.com/file/d/1SAIXL_XbhfY5bT-hF1cvIn8WIOnSSksg/preview"}]},
+  {id:"ep",name:"Elective Physics",color:"var(--ep)",glow:"var(--ep-glow)",dim:"var(--ep-dim)",
+   modules:["Semiconductor Physics","PN Junction Diode","Special Diodes","BJT","FET","Nanotechnology"],
+   notes:{
+    0:[{name:"Semiconductor Physics — Notes",type:"📄",priority:"medium",link:"https://drive.google.com/file/d/1XZdm0BqouP-GDN6-GgjwwC9TV7iwsiSL/preview"}],
+    1:[{name:"PN Junction Diode — Notes",type:"📄",priority:"medium",link:"https://drive.google.com/file/d/1UcVKeCTnByO9aRD-QEFWEJNnH3qT5AJa/preview"}],
+    2:[{name:"Special Diodes — Notes",type:"📄",priority:"medium",link:"https://drive.google.com/file/d/1pxwJRNgX_WiJemH7c8Tz326WDYsoOzA0/preview"}],
+    3:[{name:"BJT — Applied Physics Notes",type:"📄",priority:"medium",link:"https://drive.google.com/file/d/1P8CwYSyX2cHTXv96C24vuv27ileGJk4j/preview"}],
+    4:[{name:"FET — Applied Physics Notes",type:"📄",priority:"medium",link:"https://drive.google.com/file/d/1-LPogb8IUhFUzqyJ7LaZwzP83YCiOxCL/preview"}],
+    5:[{name:"Nanotechnology — Semiconductor Physics Notes",type:"📄",priority:"medium",link:"https://drive.google.com/file/d/1vVCLjjPlcr7z93Z5Z8KKpobxTIW_Z7OC/preview"}]
+   },qb:[]},
+  {id:"ec",name:"Elective Chemistry",color:"var(--ec)",glow:"var(--ec-glow)",dim:"var(--ec-dim)",
+   modules:["Fuels & Combustion","Corrosion","Phase Rule & Alloys","Polymers","Advanced Polymers","Nanomaterials"],
+   notes:{
+    0:[{name:"Combustion and Its Numerical",type:"📄",priority:"high",link:"https://drive.google.com/file/d/1VWvw7eTwV9XjEwU5XPTQyEFnfi-IQHMI/preview"},{name:"Fuel Introduction",type:"📄",priority:"medium",link:"https://drive.google.com/file/d/1yS_BW9M4MKR8HAvr6GXd7Yi0dBtyxSaV/preview"},{name:"Numerical",type:"📄",priority:"high",link:"https://drive.google.com/file/d/1jSEWFygpv29Z2MAVENGK3zC-1hIXX8rl/preview"},{name:"Proximate and Ultimate Analysis of Fuel",type:"📄",priority:"medium",link:"https://drive.google.com/file/d/1zYOwt0sWlDoc_Nc9rNYIW3SIVJlRc0mg/preview"},{name:"Proximate and Ultimate Notes (Compressed)",type:"📄",priority:"medium",link:"https://drive.google.com/file/d/1EBP27MdW_T2c03z47uq5Ynf1FRzu0eIt/preview"}],
+    1:[{name:"Hot Dipping — Galvanising and Tinning",type:"📄",priority:"medium",link:"https://drive.google.com/file/d/1bW50rzoPuglLpqfHZitNkCOm3DTLp_D8/preview"},{name:"Cathodic Protection and Corrosion in Electronic Devices",type:"📄",priority:"medium",link:"https://drive.google.com/file/d/1F63MO8N1-87ePp3gYpUszWyMJjq87d5S/preview"},{name:"Dry and Wet Corrosion",type:"📄",priority:"medium",link:"https://drive.google.com/file/d/1TAzY5NBM_EeE_Fo-uFvlhq6mb6VyoAF0/preview"},{name:"Factors Affecting Rate of Corrosion",type:"📄",priority:"medium",link:"https://drive.google.com/file/d/1yThwL7Od0XcbZa1lNYzpedhlJzzE3-i4/preview"},{name:"Inhibitors",type:"📄",priority:"medium",link:"https://drive.google.com/file/d/15XvzkGjvTHPoxDjAKct70Rp67yCj4tGt/preview"},{name:"Proper Designing and Material Selection",type:"📄",priority:"medium",link:"https://drive.google.com/file/d/1t2O2QkegNfYrWPcZjusg4XpBhXJQijbp/preview"}],
+    2:[{name:"Eutectic Numerical",type:"📄",priority:"medium",link:"https://drive.google.com/file/d/1p1Zl5K_JBJmAwKJ09oty2OxsQR1ljipf/preview"},{name:"Phase, Component, Degree of Freedom",type:"📄",priority:"medium",link:"https://drive.google.com/file/d/1jS_gVp0765PbvvzoERvLkW2LopMbQ58U/preview"},{name:"Two Component Pb-Ag System",type:"📄",priority:"medium",link:"https://drive.google.com/file/d/1eChMfEmojxM2Rlq35LJLFR1t-yrDVS59/preview"}],
+    3:[{name:"Module IV — Polymers",type:"📄",priority:"medium",link:"https://drive.google.com/file/d/1WGPT7axPkpt3Ga3GDNJrzRFPbHADvbZC/preview"},{name:"Plastics and Elastomers",type:"📄",priority:"medium",link:"https://drive.google.com/file/d/1LrBz8eFhyXsUeildP0z31Wj4mX75qXDE/preview"}],
+    4:[{name:"Module V — Advanced Polymers",type:"📄",priority:"medium",link:"https://drive.google.com/file/d/1nP8agNh1NAD1kfpIpND-drK7RfkVsubV/preview"},{name:"Conducting and Natural Biopolymer",type:"📄",priority:"medium",link:"https://drive.google.com/file/d/1rZcNSAuYuxJz9V2NiQ5ku2cdadYoOolp/preview"},{name:"Liquid Crystal Polymers",type:"📄",priority:"medium",link:"https://drive.google.com/file/d/18_XsNSQsyJ4AXg1kmBvnYVpUg_d9WCRu/preview"},{name:"Smart Polymers",type:"📄",priority:"medium",link:"https://drive.google.com/file/d/10DIOb-P19y-9seew6Wk8VupKeaBWey8-/preview"},{name:"Synthetic Biopolymers",type:"📄",priority:"medium",link:"https://drive.google.com/file/d/1YxNUwV3a987uYS1hWU7utZJTHuzU2eKc/preview"}],
+    5:[{name:"Module VI — Nanomaterials",type:"📄",priority:"medium",link:"https://drive.google.com/file/d/1U8v1Hw-oEINha3YBi4zRUz6f8pHYb_Fh/preview"},{name:"Nanomaterials",type:"📄",priority:"medium",link:"https://drive.google.com/file/d/1yNK11oMAl4vbDoas_zbdu07HwRb3b7mp/preview"}]
+   },qb:[]},
+  {id:"pc",name:"Data Structure",color:"var(--pc)",glow:"var(--pc-glow)",dim:"var(--pc-dim)",
+   modules:["Introduction to Data Structures","Stacks","Queues","Linked Lists","Trees","Applications of Stack"],
+   notes:{
+    0:[{name:"Introduction — Linear and Non Linear",type:"📄",priority:"medium",link:"https://drive.google.com/file/d/1xeZzeZn-iUHRJ83LrWaB3zQQcmS5YwVG/preview"},{name:"Abstract Data Types",type:"📄",priority:"medium",link:"https://drive.google.com/file/d/1fVLgJYT6vmF2-3PxTSVi2CZMZ3TsT4d0/preview"},{name:"Types of Data Structures with Applications",type:"📄",priority:"medium",link:"https://drive.google.com/file/d/1-qOKYeDA65ZCx9rzyFYzQ4UpbWK8Lwpx/preview"}],
+    1:[{name:"Introduction to Stack and Its Operations",type:"📄",priority:"medium",link:"https://drive.google.com/file/d/1mn_D5elQ7oGYmgIwb_B_0XAB9BQCVpG4/preview"},{name:"Implementation of Stack using Array",type:"📄",priority:"medium",link:"https://drive.google.com/file/d/19urr-oXx9N8ZyZBctAMLXUT7oyuzO0RQ/preview"},{name:"Operations on Stack",type:"📄",priority:"medium",link:"https://drive.google.com/file/d/1f6bH73v5Y2jmbzJk1zhktqnF3XfUj3pg/preview"},{name:"Infix, Prefix, Postfix Expressions",type:"📄",priority:"medium",link:"https://drive.google.com/file/d/1u1Y0zViIHtJ0mN8y1DTHZdsnvyTM3ea7/preview"},{name:"Evaluation of Postfix Expression",type:"📄",priority:"medium",link:"https://drive.google.com/file/d/1yjkHDcrFCU7r9OQ4qI-jKmvSAGMVotbO/preview"}],
+    2:[{name:"Introduction to Queue and Its Operations",type:"📄",priority:"medium",link:"https://drive.google.com/file/d/1P6HbjObKZGxSEL3GuzDpC5OFzhGeqJOL/preview"},{name:"Circular Queue",type:"📄",priority:"medium",link:"https://drive.google.com/file/d/1boSPEdgk4GNAOnN7ichd47ermI3ToVLh/preview"},{name:"Dequeue and Priority Queue",type:"📄",priority:"medium",link:"https://drive.google.com/file/d/1za9Nrs7bateGyP45Qsx8nQtT8_bITZzX/preview"},{name:"Priority Queue and Multiple Queue",type:"📄",priority:"medium",link:"https://drive.google.com/file/d/1qDSmFqkjaM-8_9Qx0vNP7zNAAM0zI7Yg/preview"},{name:"Program for Circular Queue",type:"📄",priority:"medium",link:"https://drive.google.com/file/d/1flbOr6PFbIJ3pw5vJv_qb8rxrTTiYNQM/preview"}],
+    3:[{name:"Introduction to Linked List",type:"📄",priority:"medium",link:"https://drive.google.com/file/d/1N7OlAyVHKQQmaS-YBJtJbw50IkGFzTuy/preview"},{name:"Creating a Node for Singly Linked List",type:"📄",priority:"medium",link:"https://drive.google.com/file/d/1YIl6Re0K0hHQ1co9sBrLWvkXx4mh7_G_/preview"},{name:"Operations on a Singly Linked List",type:"📄",priority:"medium",link:"https://drive.google.com/file/d/1-sOEMreJoS2l589fsxd6OWMrYN7FuF7S/preview"},{name:"Introduction to Doubly Linked List",type:"📄",priority:"medium",link:"https://drive.google.com/file/d/1gESbY9_Cjya-j8q8gBieialJNAP5THBQ/preview"},{name:"Introduction to Circular Linked List",type:"📄",priority:"medium",link:"https://drive.google.com/file/d/115fkEG1tq6TMmEBjqxCczdqzJltAtvPf/preview"},{name:"Traversing a Singly Linked List",type:"📄",priority:"medium",link:"https://drive.google.com/file/d/1zVyjpH5Pob20hL-lS84bafHuEZAOuoBT/preview"}],
+    4:[{name:"Binary Search Tree",type:"📄",priority:"medium",link:"https://drive.google.com/file/d/1KVEL0NKm0vu16-_T0NlOUiuZRCIvScn7/preview"},{name:"Binary Search Tree (Compressed)",type:"📄",priority:"medium",link:"https://drive.google.com/file/d/1p2Fw4RnLP7E4CnewyPF4DwmH1MRbSeca/preview"},{name:"Binary Search",type:"📄",priority:"medium",link:"https://drive.google.com/file/d/1NrxKGKNIww7lqUQPR3mI8ta-rzrTkaF-/preview"},{name:"Binary Tree Traversals",type:"📄",priority:"medium",link:"https://drive.google.com/file/d/1GJ8ptrN2S1N812vsgMLB036ZbB3drdAo/preview"},{name:"Binary Trees",type:"📄",priority:"medium",link:"https://drive.google.com/file/d/1Z7A003DiJxfCcVAD7_XE2OvaGHPnRp0X/preview"},{name:"Trees",type:"📄",priority:"medium",link:"https://drive.google.com/file/d/1B8S2UYzvNKoWuVZnqmN7jk0SSN_F8olO/preview"},{name:"Sums on Construction of Binary Trees from Traversals",type:"📄",priority:"medium",link:"https://drive.google.com/file/d/1cx2EiEZRJmGUyHXPYqcUgYxNjBiSYGLR/preview"}],
+    5:[{name:"Application of Stack",type:"📄",priority:"medium",link:"https://drive.google.com/file/d/1nDCi3I_2mdSEtvtySQIYxatWs_5sS6h5/preview"},{name:"Conversion of Infix Expression to Postfix",type:"📄",priority:"medium",link:"https://drive.google.com/file/d/1j6jmZQYk8AyjK3m-T8PgdiXiUe1xxJJl/preview"},{name:"Checking Validity of Parenthesis",type:"📄",priority:"medium",link:"https://drive.google.com/file/d/17f7W_gapafgMRZS_pHlojZi9rOaNFQkM/preview"},{name:"Reversal of String",type:"📄",priority:"medium",link:"https://drive.google.com/file/d/1inOensAxwfSZciN6ZwxUJy_Wa2h_tnVb/preview"},{name:"Sum on Huffman Coding",type:"📄",priority:"medium",link:"https://drive.google.com/file/d/13BsobE99aPnK_8X-uRL6rQ-wab7rQzMH/preview"}]
+   },
+   qb:[{name:"Recursion",type:"📋",priority:"high",link:"https://drive.google.com/file/d/1AScEBRdKn6LnO2oKnF9mnLj-lulBHbyh/preview"},{name:"Module 0 — Structure",type:"📋",priority:"high",link:"https://drive.google.com/file/d/1JneZJIWvDwgRZFF9N0I39Gzz4qA7Lr2S/preview"},{name:"Pointer",type:"📋",priority:"high",link:"https://drive.google.com/file/d/1Gv2EyX5y_sotxe5rov1j9MWIB-DiKYJh/preview"},{name:"Module 0 — Array",type:"📋",priority:"high",link:"https://drive.google.com/file/d/1POEvUXrT94gTeIR2UoZv2BTB88p581eB/preview"}]}
+];
+
+const EXAMS=[
+  {date:"2026-05-11",subject:"Applied Mathematics-II",subjectId:"am",code:"10521"},
+  {date:"2026-05-13",subject:"Engineering Graphics",subjectId:"eg",code:"10522"},
+  {date:"2026-05-15",subject:"Data Structure",subjectId:"pc",code:"10523"},
+  {date:"2026-05-18",subject:"Semiconductor Physics",subjectId:"ep",code:"10552"},
+  {date:"2026-05-20",subject:"Engineering Materials",subjectId:"ec",code:"10557"},
+];
+
+let moduleState=JSON.parse(localStorage.getItem("ms2")||"{}");
+let recentViewed=JSON.parse(localStorage.getItem("rv2")||"[]");
+let currentSubject=null;
+let currentTab="notes";
+let dark=localStorage.getItem("dark2")!=="false";
+
+// expanded state per module: default all open
+function getExpandState(sid){return JSON.parse(sessionStorage.getItem("exp_"+sid)||"null")||{};}
+function setExpandState(sid,st){sessionStorage.setItem("exp_"+sid,JSON.stringify(st));}
+
+function init(){
+  if(!dark)document.documentElement.setAttribute("data-theme","light");
+  buildNav();
+  buildHome();
+  buildTimetable();
+  document.addEventListener("keydown",e=>{
+    if(e.key==="/"&&document.activeElement.tagName!=="INPUT"){e.preventDefault();document.getElementById("search-input").focus();}
+    if(e.key==="Escape"){document.getElementById("search-input").blur();document.getElementById("search-results").style.display="none";}
+  });
+  document.addEventListener("click",e=>{
+    if(!e.target.closest(".search-wrap"))document.getElementById("search-results").style.display="none";
+  });
+}
+
+function buildNav(){
+  const list=document.getElementById("nav-list");
+  list.innerHTML=SUBJECTS.map(s=>`
+    <button class="nav-item" onclick="openSubject('${s.id}')" id="nav-${s.id}">
+      <span class="nav-dot" style="background:${s.color}"></span>
+      <span class="nav-name">${s.name}</span>
+      <span class="nav-count">${countDone(s.id)}/${s.modules.length}</span>
+    </button>`).join("");
+}
+
+function countDone(sid){const k=sid+"_m";const st=moduleState[k]||[];return st.filter(Boolean).length;}
+
+function buildHome(){
+  // exam strip
+  const today=new Date();today.setHours(0,0,0,0);
+  document.getElementById("exam-strip").innerHTML=EXAMS.map(e=>{
+    const s=SUBJECTS.find(x=>x.id===e.subjectId);
+    const diff=Math.ceil((new Date(e.date)-today)/864e5);
+    return `<div class="exam-pill" onclick="openSubject('${e.subjectId}')" style="--c:${s.color}">
+      <style>.exam-pill[data-id="${e.subjectId}"]::before{background:${s.color}}</style>
+      <div class="ep-subj">${e.subject}</div>
+      <div class="ep-days" style="color:${s.color}">${diff>0?diff:diff===0?"🎯":"✓"}</div>
+      <div class="ep-label">${diff>0?"days left":diff===0?"today!":"done"}</div>
+      <div class="ep-date">${fmtDate(e.date)}</div>
+    </div>`;
+  }).join("");
+
+  // subjects grid
+  document.getElementById("subjects-grid").innerHTML=SUBJECTS.map(s=>{
+    const done=countDone(s.id);
+    const total=s.modules.length;
+    const segs=s.modules.map((_,i)=>{
+      const st=moduleState[s.id+"_m"]||[];
+      return `<div class="prog-seg ${st[i]?"done":""}" style="${st[i]?"background:"+s.color:""}"></div>`;
+    }).join("");
+    return `<div class="subject-card" onclick="openSubject('${s.id}')">
+      <div class="sc-accent" style="background:${s.color}"></div>
+      <div class="sc-glow" style="background:${s.glow}"></div>
+      <div class="sc-top">
+        <div class="sc-dot" style="background:${s.color}"></div>
+        <div class="sc-name">${s.name}</div>
+        <div class="sc-code">${s.id.toUpperCase()}</div>
+      </div>
+      <div class="prog-strip">${segs}</div>
+      <div class="sc-footer">
+        <div class="sc-progress-text">${done}/${total} modules done</div>
+        <div class="sc-arrow">→</div>
+      </div>
+    </div>`;
+  }).join("");
+
+  renderRecent();
+}
+
+function renderRecent(){
+  const row=document.getElementById("recent-row");
+  if(!recentViewed.length){row.innerHTML='<span style="font-size:0.8rem;color:var(--muted)">Nothing yet — open a file to track it here.</span>';return;}
+  row.innerHTML=recentViewed.map(r=>{
+    const s=SUBJECTS.find(x=>x.id===r.subjectId);
+    return `<div class="recent-chip" onclick="openFile('${enc(r.link)}','${enc(r.name)}','${r.subjectId}')">
+      <span class="chip-dot" style="background:${s?s.color:"var(--muted)"}"></span>${r.name}
+    </div>`;
+  }).join("");
+}
+
+function openSubject(id){
+  currentSubject=id;
+  const s=SUBJECTS.find(x=>x.id===id);
+  document.getElementById("sp-title").textContent=s.name;
+  document.getElementById("sp-accent").style.background=s.color;
+  document.getElementById("inner-tabs").innerHTML=`
+    <button class="inner-tab active" id="itab-notes" onclick="switchTab('notes')" style="background:${s.color}">Notes</button>
+    <button class="inner-tab" id="itab-qb" onclick="switchTab('qb')">Question Bank</button>`;
+  renderNotesTab(s);
+  document.getElementById("sp-qb").style.display="none";
+  document.getElementById("sp-notes").style.display="";
+  showPage("subject");
+  // highlight nav
+  document.querySelectorAll(".nav-item").forEach(n=>n.classList.remove("active"));
+  document.getElementById("nav-"+id)?.classList.add("active");
+}
+
+function switchTab(tab){
+  currentTab=tab;
+  const s=SUBJECTS.find(x=>x.id===currentSubject);
+  document.getElementById("itab-notes").classList.toggle("active",tab==="notes");
+  document.getElementById("itab-qb").classList.toggle("active",tab==="qb");
+  document.getElementById("itab-notes").style.background=tab==="notes"?s.color:"";
+  document.getElementById("itab-qb").style.background=tab==="qb"?s.color:"";
+  if(tab==="notes"){document.getElementById("sp-notes").style.display="";document.getElementById("sp-qb").style.display="none";renderNotesTab(s);}
+  else{document.getElementById("sp-notes").style.display="none";document.getElementById("sp-qb").style.display="";renderQBTab(s);}
+}
+
+function renderNotesTab(s){
+  const key=s.id+"_m";
+  const mState=moduleState[key]||Array(s.modules.length).fill(false);
+  const expState=getExpandState(s.id);
+  document.getElementById("sp-notes").innerHTML=s.modules.map((m,i)=>{
+    const files=(s.notes&&s.notes[i])||[];
+    // default: first module open, rest open too for less clicks
+    const isOpen=expState[i]!==undefined?expState[i]:true;
+    return `<div class="module-block" id="mb-${s.id}-${i}">
+      <div class="module-header" onclick="toggleExpand('${s.id}',${i})">
+        <div class="mod-check ${mState[i]?"checked":""}" id="mc-${s.id}-${i}"
+          style="${mState[i]?"background:"+s.color+";border-color:"+s.color:""}"
+          onclick="event.stopPropagation();toggleModule('${s.id}',${i})">${mState[i]?"✓":""}</div>
+        <div class="mod-info">
+          <div class="mod-name" style="${mState[i]?"opacity:0.5;text-decoration:line-through":""}">${m}</div>
+          <div class="mod-sub">${files.length} file${files.length!==1?"s":""}</div>
+        </div>
+        <div class="mod-toggle ${isOpen?"open":""}" id="arr-${s.id}-${i}">▶</div>
+      </div>
+      <div class="module-files ${isOpen?"":"hidden"}" id="mf-${s.id}-${i}">
+        ${files.length?files.map(f=>fileRowHTML(f)).join(""):`<div class="no-files">No files uploaded yet</div>`}
+      </div>
+    </div>`;
+  }).join("");
+}
+
+function renderQBTab(s){
+  document.getElementById("sp-qb").innerHTML=s.qb&&s.qb.length
+    ?`<div class="section-label" style="margin-bottom:12px">Question Bank Files</div><div class="qb-grid">${s.qb.map(f=>fileRowHTML(f)).join("")}</div>`
+    :`<div style="padding:40px 0;text-align:center;color:var(--muted);font-size:0.85rem">No question bank files uploaded yet.</div>`;
+}
+
+function fileRowHTML(f){
+  const isSlides=f.type==="📊";
+  const icon=isSlides
+    ?`<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.45;flex-shrink:0"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>`
+    :`<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.45;flex-shrink:0"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>`;
+  return `<div class="file-row" onclick="openFile('${enc(f.link)}','${enc(f.name)}','${currentSubject||""}')">
+    ${icon}
+    <span class="file-name">${f.name}</span>
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.2;flex-shrink:0"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+  </div>`;
+}
+
+function toggleExpand(sid,idx){
+  const expState=getExpandState(sid);
+  expState[idx]=!expState[idx];
+  setExpandState(sid,expState);
+  const files=document.getElementById(`mf-${sid}-${idx}`);
+  const arr=document.getElementById(`arr-${sid}-${idx}`);
+  if(files)files.classList.toggle("hidden",!expState[idx]);
+  if(arr)arr.classList.toggle("open",!!expState[idx]);
+}
+
+function toggleModule(sid,idx){
+  const key=sid+"_m";
+  if(!moduleState[key])moduleState[key]=Array(6).fill(false);
+  moduleState[key][idx]=!moduleState[key][idx];
+  localStorage.setItem("ms2",JSON.stringify(moduleState));
+  const s=SUBJECTS.find(x=>x.id===sid);
+  renderNotesTab(s);
+  buildNav();
+  buildHome();
+}
+
+function openFile(encLink,encName,sid){
+  const link=decodeURIComponent(encLink);
+  const name=decodeURIComponent(encName);
+  const entry={name,link,subjectId:sid,ts:Date.now()};
+  recentViewed=recentViewed.filter(r=>r.name!==name);
+  recentViewed.unshift(entry);
+  if(recentViewed.length>8)recentViewed.pop();
+  localStorage.setItem("rv2",JSON.stringify(recentViewed));
+  renderRecent();
+  const m=link.match(/\/d\/([a-zA-Z0-9_-]+)/);
+  window.open(m?"https://drive.google.com/file/d/"+m[1]+"/preview":link,"_blank");
+}
+
+function handleSearch(q){
+  const res=document.getElementById("search-results");
+  if(!q.trim()){res.style.display="none";return;}
+  res.style.display="block";
+  const ql=q.toLowerCase();
+  const matches=[];
+  SUBJECTS.forEach(s=>{
+    const allFiles=Object.values(s.notes||{}).flat();
+    [...allFiles,...(s.qb||[])].forEach(f=>{
+      if(f.name.toLowerCase().includes(ql)||s.name.toLowerCase().includes(ql))
+        matches.push({...f,sName:s.name,sColor:s.color,sid:s.id});
+    });
+  });
+  res.innerHTML=matches.length
+    ?matches.slice(0,8).map(m=>`<div class="sr-item" onclick="openFile('${enc(m.link)}','${enc(m.name)}','${m.sid}')">
+        <span class="sr-dot" style="background:${m.sColor}"></span>
+        <span class="sr-name">${m.name}</span>
+        <span class="sr-subj">${m.sName}</span>
+      </div>`).join("")
+    :`<div class="sr-empty">No results for "${q}"</div>`;
+}
+
+function buildTimetable(){
+  const today=new Date();today.setHours(0,0,0,0);
+  const days=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+  document.getElementById("countdown-grid").innerHTML=EXAMS.map(e=>{
+    const s=SUBJECTS.find(x=>x.id===e.subjectId);
+    const diff=Math.ceil((new Date(e.date)-today)/864e5);
+    return `<div class="cd-card" style="border-top:3px solid ${s.color}">
+      <div class="cd-subj">${e.subject}</div>
+      <div class="cd-days" style="color:${s.color}">${diff>0?diff:diff===0?"🎯":"✓"}</div>
+      <div class="cd-unit">${diff>0?"days left":diff===0?"exam today!":"completed"}</div>
+      <div class="cd-date">${fmtDate(e.date)}</div>
+    </div>`;
+  }).join("");
+  document.getElementById("tt-body").innerHTML=EXAMS.map(e=>{
+    const s=SUBJECTS.find(x=>x.id===e.subjectId);
+    const examDate=new Date(e.date);examDate.setHours(0,0,0,0);
+    const isToday=examDate.getTime()===today.getTime();
+    return `<div class="tt-row ${isToday?"today":""}">
+      <div class="tt-date">${fmtDate(e.date)}${isToday?'<span class="today-badge">today</span>':""}</div>
+      <div class="tt-day">${days[new Date(e.date).getDay()]}</div>
+      <div class="tt-code">${e.code}</div>
+      <div><span class="tt-subj-pill" style="background:${s.color}">${e.subject}</span></div>
+    </div>`;
+  }).join("");
+}
+
+function showPage(page){
+  document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+  document.querySelectorAll(".nav-item").forEach(n=>n.classList.remove("active"));
+  document.getElementById("page-"+page).classList.add("active");
+  document.getElementById("nav-"+page)?.classList.add("active");
+  if(page==="home")buildHome();
+}
+
+function toggleTheme(){
+  dark=!dark;
+  localStorage.setItem("dark2",dark);
+  document.documentElement.setAttribute("data-theme",dark?"":"light");
+  document.getElementById("theme-btn").textContent=dark?"◐ Toggle Light Mode":"◑ Toggle Dark Mode";
+}
+
+function enc(s){return encodeURIComponent(s);}
+function fmtDate(d){return new Date(d).toLocaleDateString("en-IN",{day:"numeric",month:"short",year:"numeric"});}
+
+document.addEventListener("DOMContentLoaded",init);
+</script>
+</body>
+</html>
