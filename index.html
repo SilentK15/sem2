@@ -148,12 +148,7 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 .module-files.hidden{display:none;}
 .file-row{display:flex;align-items:center;gap:10px;padding:9px 12px;background:var(--surface2);border-radius:9px;cursor:pointer;transition:all 0.15s;border:1px solid transparent;}
 .file-row:hover{background:var(--surface3);border-color:var(--border);}
-.file-icon{font-size:1rem;flex-shrink:0;}
 .file-name{font-size:0.82rem;flex:1;}
-.priority-badge{font-size:0.62rem;font-weight:700;padding:2px 7px;border-radius:999px;text-transform:uppercase;letter-spacing:0.4px;flex-shrink:0;}
-.priority-high{background:rgba(255,80,80,0.15);color:#ff6060;}
-.priority-medium{background:rgba(245,200,66,0.12);color:#c9a428;}
-.priority-low{background:rgba(62,207,142,0.12);color:#3ecf8e;}
 .no-files{font-size:0.78rem;color:var(--muted);padding:10px 0;text-align:center;}
 
 /* QB FILES */
@@ -524,10 +519,14 @@ function renderQBTab(s){
 }
 
 function fileRowHTML(f){
+  const isSlides=f.type==="📊";
+  const icon=isSlides
+    ?`<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.45;flex-shrink:0"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>`
+    :`<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.45;flex-shrink:0"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>`;
   return `<div class="file-row" onclick="openFile('${enc(f.link)}','${enc(f.name)}','${currentSubject||""}')">
-    <span class="file-icon">${f.type||"📄"}</span>
+    ${icon}
     <span class="file-name">${f.name}</span>
-    <span class="priority-badge priority-${f.priority}">${f.priority}</span>
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.2;flex-shrink:0"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
   </div>`;
 }
 
